@@ -5,6 +5,8 @@ import org.opencv.core.Mat;
 import edu.wpi.first.math.geometry.Translation2d;
 
 public class Constants {
+
+    public static final double Delta = 1e-2;
     
     public static final Translation2d[] moduleLocations = {
         new Translation2d(-0.29845,0.29845),  //front right ++
@@ -59,6 +61,10 @@ public class Constants {
         public static final double speakerAng = 0;
         public static final double ExtendedAngle = 50;
         public static final double EncoderOffset = 0;
+
+        public static final double retractedSetPoint = 0.01318359375;
+        public static final double ampSetPoint = -0.5;
+        public static final double extendedSetPoint = -1.103515625;
 
     }
 

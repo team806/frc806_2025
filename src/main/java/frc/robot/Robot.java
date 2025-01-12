@@ -16,6 +16,7 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.AlternateEncoderConfig;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.MedianFilter;
@@ -43,6 +44,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
 import frc.robot.Subsystems.DrivetrainSubsystem;
 import edu.wpi.first.cameraserver.CameraServer;
+import frc.robot.Subsystems.Intake;
+import frc.robot.IO.RealSparkMaxIO;
 
 
 public class Robot extends TimedRobot {
@@ -55,9 +58,8 @@ public class Robot extends TimedRobot {
 
   //crap code//
   //ang motor
-  SparkMax AngMotor = new SparkMax(Constants.Intake.AngMotorID, MotorType.kBrushless);
-  RelativeEncoder angEncoder;
-  double angEncoderOffset = 0.03;
+  RealSparkMaxIO angleMotorIo = new RealSparkMaxIO(Constants.Intake.AngMotorID, MotorType.kBrushless, RealSparkMaxIO.EncoderType.ENCODER_TYPE_ALTERNATE);
+  Intake intake;
   PIDController angController = new PIDController(1.5,0 ,0);
   SlewRateLimiter angLimiter = new SlewRateLimiter(2);
   boolean intakeAutoControl = false;
@@ -103,9 +105,11 @@ public class Robot extends TimedRobot {
     SparkMaxConfig config = new SparkMaxConfig();
     config.smartCurrentLimit(40);
     config.idleMode(IdleMode.kBrake);
-    AngMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    angEncoder = AngMotor.getAlternateEncoder();
-
+    AlternateEncoderConfig ang_alt_encoder_config = new AlternateEncoderConfig();
+    ang_alt_encoder_config.countsPerRevolution(8192);
+    config.alternateEncoder.apply(ang_alt_encoder_config);
+    angleMotorIo.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    intake = new Intake(angleMotorIo);
     SparkMaxConfig wheelConfig = new SparkMaxConfig();
     wheelConfig.smartCurrentLimit(40);
     wheelConfig.idleMode(IdleMode.kCoast);
@@ -135,7 +139,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
 
-    SmartDashboard.putNumber("encoder Position", angEncoder.getPosition());
+    SmartDashboard.putNumber("encoder Position", angleMotorIo.getPosition());
 
     CommandScheduler.getInstance().run();
   }
@@ -216,37 +220,19 @@ public class Robot extends TimedRobot {
         solenoid.set(Value.kForward);
       }
     //intake
-      boolean coDriverLeftBumber = coDriverController.getLeftBumper();
-      boolean coDriverRightBumber = coDriverController.getRightBumper();
+      boolean coDriverLeftBumber = coDriverController.getLeftBumperButton();
+      boolean coDriverRightBumber = coDriverController.getRightBumperButton();
 
-      double encoderAng = angEncoder.getPosition();
+      double encoderAng = angleMotorIo.getPosition();
 
       if(coDriverLeftBumber || coDriverRightBumber){
         intakeAutoControl = false;
       }
+      boolean retractButtonPressed = coDriverController.getAButtonPressed();
+      boolean ampButtonPressed = coDriverController.getLeftStickButtonPressed();
+      boolean extendedButtonPressed = coDriverController.getXButtonPressed();
 
-      if(coDriverController.getAButtonPressed()){//retracted
-        angController.setSetpoint(retractedSetpoint);
-        intakeAutoControl = true;
-      }else if(coDriverController.getLeftStickButtonPressed()){//amp
-        angController.setSetpoint(ampSetpoint);          
-        intakeAutoControl = true;
-      }else if(coDriverController.getXButtonPressed()){//extended
-        angController.setSetpoint(extendedSetpoint);          
-        intakeAutoControl = true;
-      }    
-      
-      if(intakeAutoControl){
-        AngMotor.set(angLimiter.calculate(angController.calculate(encoderAng)));
-      }else{
-        if (coDriverLeftBumber) {
-          AngMotor.set(-intakerotationspeed);
-        }else if (coDriverRightBumber) {
-          AngMotor.set(intakerotationspeed);
-        }else{
-          AngMotor.set(0);
-        }
-      }
+      intake.Update(retractButtonPressed, ampButtonPressed, extendedButtonPressed, coDriverRightBumber, coDriverLeftBumber);
     //intake wheel motor
       if(coDriverController.getRightTriggerAxis() > 0.5){
         if(encoderAng < -0.2 && encoderAng > -0.8){
@@ -285,7 +271,7 @@ public class Robot extends TimedRobot {
       y = (y > 0)? Math.abs(Math.pow(y,translationPow)) : -Math.abs(Math.pow(y,translationPow));
       theta = (theta>0)? Math.abs(Math.pow(theta,rotationPow)) : -Math.abs(Math.pow(theta,rotationPow));
 
-      slow = driveController.getLeftBumper();
+      slow = driveController.getLeftBumperButton();
       //if(slow){DrivetrainSubsystem.getInstance().driveFieldRelative(new ChassisSpeeds(
       //  y * Constants.attainableMaxTranslationalSpeedMPS * 0.25, 
       //  x * Constants.attainableMaxTranslationalSpeedMPS * 0.25, 
