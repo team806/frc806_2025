@@ -63,7 +63,6 @@ public class Robot extends TimedRobot {
   PIDController angController = new PIDController(1.5,0 ,0);
   SlewRateLimiter angLimiter = new SlewRateLimiter(2);
   //wheel motor
-  SparkMax WheelMotor = new SparkMax(Constants.Intake.ShootMotorID, MotorType.kBrushless);
   RealSparkMaxIO intakeMotorIo = new RealSparkMaxIO(Constants.Intake.ShootMotorID, MotorType.kBrushless);
   boolean shooting = false;
   boolean intaking = false;
@@ -122,7 +121,6 @@ public class Robot extends TimedRobot {
     SparkMaxConfig wheelConfig = new SparkMaxConfig();
     wheelConfig.smartCurrentLimit(40);
     wheelConfig.idleMode(IdleMode.kCoast);
-    WheelMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     intakeMotorIo.configure(wheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     intake = new Intake(angleMotorIo, intakeMotorIo);
     shooter1.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -243,16 +241,6 @@ public class Robot extends TimedRobot {
 
       intake.Update(retractButtonPressed, ampButtonPressed, extendedButtonPressed, coDriverRightBumber, coDriverLeftBumber,
       rightTriggerAxis, leftTriggerAxis, ampShootSpeed, speakerShootSpeed);
-    //intake wheel motor
-      if(coDriverController.getRightTriggerAxis() > 0.5){
-        if(encoderAng < -0.2 && encoderAng > -0.8){
-          WheelMotor.set(ampShootSpeed);
-        }else{
-          WheelMotor.set(speakerShootSpeed);
-        }
-      }else{
-        WheelMotor.set(coDriverController.getLeftTriggerAxis() * 0.5);
-      }
 
     //shooter
       if(coDriverController.getYButtonPressed()){

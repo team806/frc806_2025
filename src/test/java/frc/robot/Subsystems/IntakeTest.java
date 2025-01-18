@@ -39,8 +39,8 @@ public class IntakeTest {
     void stateTest() {
         // Starts with intake retracted
         mockAngleMotorIO.setPosition(Constants.Intake.retractedSetPoint);
-        assertEquals(IntakeState.INTAKE_STATE_RETRACTED, m_intake.Update(false, false, false, false, false, 0, 0));
+        assertEquals(IntakeState.INTAKE_STATE_RETRACTED, m_intake.Update(false, false, false, false, false, 0.0, 0.0, 0, 0));
         mockAngleMotorIO.setPosition(0.3);
-        assertEquals(IntakeState.INTAKE_STATE_AMP, m_intake.Update(false, false, false, false, false, 0, 0));
+        assertEquals(IntakeState.INTAKE_STATE_AMP, m_intake.Update(false, false, false, false, false, 0.0, 0.0, 0, 0));
     }
 }
