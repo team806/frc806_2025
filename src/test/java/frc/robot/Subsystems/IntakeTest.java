@@ -22,6 +22,7 @@ import frc.robot.Mocks.MockSparkMaxIO;
 public class IntakeTest {
     Intake m_intake;
     MockSparkMaxIO mockAngleMotorIO;
+    MockSparkMaxIO mockIntakeMotorIO;
 
     @BeforeEach
     void Setup() {
@@ -30,15 +31,16 @@ public class IntakeTest {
         // angleMotorSim = new SparkMaxSim(new SparkMax(Constants.Intake.AngMotorID,
         // MotorType.kBrushless), motor);
         mockAngleMotorIO = new MockSparkMaxIO();
-        m_intake = new Intake(mockAngleMotorIO);
+        mockIntakeMotorIO = new MockSparkMaxIO();
+        m_intake = new Intake(mockAngleMotorIO, mockIntakeMotorIO);
     }
 
     @Test
     void stateTest() {
         // Starts with intake retracted
         mockAngleMotorIO.setPosition(Constants.Intake.retractedSetPoint);
-        assertEquals(IntakeState.INTAKE_STATE_RETRACTED, m_intake.Update(false, false, false, false, false));
-        mockAngleMotorIO.setPosition(Constants.Intake.ampSetPoint);
-        assertEquals(IntakeState.INTAKE_STATE_AMP, m_intake.Update(false, false, false, false, false));
+        assertEquals(IntakeState.INTAKE_STATE_RETRACTED, m_intake.Update(false, false, false, false, false, 0, 0));
+        mockAngleMotorIO.setPosition(0.3);
+        assertEquals(IntakeState.INTAKE_STATE_AMP, m_intake.Update(false, false, false, false, false, 0, 0));
     }
 }

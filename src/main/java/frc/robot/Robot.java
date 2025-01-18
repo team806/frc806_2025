@@ -62,9 +62,9 @@ public class Robot extends TimedRobot {
   Intake intake;
   PIDController angController = new PIDController(1.5,0 ,0);
   SlewRateLimiter angLimiter = new SlewRateLimiter(2);
-  boolean intakeAutoControl = false;
   //wheel motor
   SparkMax WheelMotor = new SparkMax(Constants.Intake.ShootMotorID, MotorType.kBrushless);
+  RealSparkMaxIO intakeMotorIo = new RealSparkMaxIO(Constants.Intake.ShootMotorID, MotorType.kBrushless);
   boolean shooting = false;
   boolean intaking = false;
   double ampShootSpeed = -0.7;
@@ -84,8 +84,17 @@ public class Robot extends TimedRobot {
   PneumaticsControlModule PCM = new PneumaticsControlModule();
   DoubleSolenoid solenoid;
   
-  public Command shoot = Commands.runOnce(()->{setShooterSpeed(1.0);}).andThen(Commands.waitSeconds(1)).andThen(Commands.runOnce(()->{WheelMotor.set(-1);})).andThen(Commands.waitSeconds(1)).andThen(Commands.runOnce(()->{WheelMotor.set(0);setShooterSpeed(0);}));
-  public Command taxi = Commands.runOnce(()->{DrivetrainSubsystem.getInstance().driveFieldRelative(new ChassisSpeeds(-2,0,0));}).andThen(Commands.waitSeconds(4)).andThen(()->{DrivetrainSubsystem.getInstance().driveFieldRelative(new ChassisSpeeds());});
+  public Command shoot = Commands.runOnce(()->{
+    setShooterSpeed(1.0);}).andThen(
+      Commands.waitSeconds(1)).andThen(
+        Commands.runOnce(()->{intakeMotorIo.setSpeed(-1);})).andThen(
+          Commands.waitSeconds(1)).andThen(
+            Commands.runOnce(()->{intakeMotorIo.setSpeed(0);setShooterSpeed(0);}));
+  public Command taxi = Commands.runOnce(()->{
+    DrivetrainSubsystem.getInstance().driveFieldRelative(
+      new ChassisSpeeds(-2,0,0));}).andThen(
+        Commands.waitSeconds(4)).andThen(()->{
+          DrivetrainSubsystem.getInstance().driveFieldRelative(new ChassisSpeeds());});
   //public Command donothing = Commands.runOnce(()->{setShooterSpeed(0);}).andThen(Commands.waitSeconds(15));
   double translationPow = 3;
   double rotationPow = 3;
@@ -109,11 +118,13 @@ public class Robot extends TimedRobot {
     ang_alt_encoder_config.countsPerRevolution(8192);
     config.alternateEncoder.apply(ang_alt_encoder_config);
     angleMotorIo.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    intake = new Intake(angleMotorIo);
+    
     SparkMaxConfig wheelConfig = new SparkMaxConfig();
     wheelConfig.smartCurrentLimit(40);
     wheelConfig.idleMode(IdleMode.kCoast);
     WheelMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    intakeMotorIo.configure(wheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    intake = new Intake(angleMotorIo, intakeMotorIo);
     shooter1.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     shooter2.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -224,15 +235,14 @@ public class Robot extends TimedRobot {
       boolean coDriverRightBumber = coDriverController.getRightBumperButton();
 
       double encoderAng = angleMotorIo.getPosition();
-
-      if(coDriverLeftBumber || coDriverRightBumber){
-        intakeAutoControl = false;
-      }
       boolean retractButtonPressed = coDriverController.getAButtonPressed();
       boolean ampButtonPressed = coDriverController.getLeftStickButtonPressed();
       boolean extendedButtonPressed = coDriverController.getXButtonPressed();
+      double rightTriggerAxis = coDriverController.getRightTriggerAxis();
+      double leftTriggerAxis = coDriverController.getLeftTriggerAxis();
 
-      intake.Update(retractButtonPressed, ampButtonPressed, extendedButtonPressed, coDriverRightBumber, coDriverLeftBumber);
+      intake.Update(retractButtonPressed, ampButtonPressed, extendedButtonPressed, coDriverRightBumber, coDriverLeftBumber,
+      rightTriggerAxis, leftTriggerAxis, ampShootSpeed, speakerShootSpeed);
     //intake wheel motor
       if(coDriverController.getRightTriggerAxis() > 0.5){
         if(encoderAng < -0.2 && encoderAng > -0.8){

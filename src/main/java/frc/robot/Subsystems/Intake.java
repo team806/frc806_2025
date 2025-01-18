@@ -33,6 +33,7 @@ enum IntakeState {
 
 public class Intake extends SubsystemBase {
     private final SparkMaxIO angleMotorIo;
+    private final SparkMaxIO intakeMotorIo;
     private final PIDController angController = new PIDController(1.5, 0, 0);
     private final SlewRateLimiter angLimiter = new SlewRateLimiter(2);
 
@@ -43,8 +44,9 @@ public class Intake extends SubsystemBase {
     private double manualMovementSpeed = 0.0;
     private IntakeState currentIntakeState;
     private IntakeState desiredIntakeState;
-    public Intake(SparkMaxIO angle_motor_io) {
-        angleMotorIo = angle_motor_io;
+    public Intake(SparkMaxIO angleMotorIo, SparkMaxIO intakeMotorIo) {
+        this.angleMotorIo = angleMotorIo;
+        this.intakeMotorIo = intakeMotorIo;
         currentIntakeState = IntakeState.INTAKE_STATE_UNKNOWN;
         desiredIntakeState = IntakeState.INTAKE_STATE_RETRACTED;
     }
@@ -56,11 +58,11 @@ public class Intake extends SubsystemBase {
             return;
         }
 
-        if (Utils.IsDoubleApproximately(encoderAngle, Constants.Intake.retractedSetPoint)){
+        if (Utils.IsDoubleApproximately(encoderAngle, Constants.Intake.retractedSetPoint, Constants.Delta)){
             currentIntakeState = IntakeState.INTAKE_STATE_RETRACTED;
-        } else if (Utils.IsDoubleApproximately(encoderAngle, Constants.Intake.ampSetPoint)){
+        } else if (Utils.IsDoubleApproximately(encoderAngle, Constants.Intake.ampSetPoint, 0.3)){
             currentIntakeState = IntakeState.INTAKE_STATE_AMP;
-        } else if (Utils.IsDoubleApproximately(encoderAngle, Constants.Intake.extendedSetPoint)){
+        } else if (Utils.IsDoubleApproximately(encoderAngle, Constants.Intake.extendedSetPoint, Constants.Delta)){
             currentIntakeState = IntakeState.INTAKE_STATE_EXTENDED;
         } else {
             currentIntakeState = IntakeState.INTAKE_STATE_MOVING;
@@ -104,7 +106,8 @@ public class Intake extends SubsystemBase {
     public IntakeState Update(
         boolean retractButtonPressed, boolean ampButtonPressed,
       boolean extendButtonPressed, boolean raiseButtonPressed, 
-      boolean lowerButtonPressed){
+      boolean lowerButtonPressed, double rightTriggerAxis, double leftTriggerAxis,
+      double ampShootSpeed, double speakerShootSpeed){
         if (retractButtonPressed){
             SetDesiredState(IntakeState.INTAKE_STATE_RETRACTED);
         } else if (ampButtonPressed){
@@ -119,6 +122,15 @@ public class Intake extends SubsystemBase {
             ManualUpdate(0);
         }
         RunLoop();
+        if (rightTriggerAxis > 0.5){
+            if (currentIntakeState == IntakeState.INTAKE_STATE_AMP){
+                intakeMotorIo.setSpeed(ampShootSpeed);
+            } else {
+                intakeMotorIo.setSpeed(speakerShootSpeed);
+            }
+        } else {
+            intakeMotorIo.setSpeed(leftTriggerAxis * 0.5);
+        }
         return currentIntakeState;
     }
 
