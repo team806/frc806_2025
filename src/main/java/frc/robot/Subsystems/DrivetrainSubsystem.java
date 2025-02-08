@@ -8,6 +8,7 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 //import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
@@ -15,8 +16,14 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonUtils;
+import org.photonvision.proto.Photon;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class DrivetrainSubsystem extends SubsystemBase{
 
@@ -32,12 +39,15 @@ public class DrivetrainSubsystem extends SubsystemBase{
         SlewRateLimiter translationXLimiter = new SlewRateLimiter(translationMaxAccelerationMetersPerSecondSquared);
         SlewRateLimiter translationYLimiter = new SlewRateLimiter(translationMaxAccelerationMetersPerSecondSquared);
         SlewRateLimiter rotationLimiter = new SlewRateLimiter(rotationMaxAccelerationRadiansPerSecondSquared);
+        PhotonCamera camera = new PhotonCamera("photonvision");
+
     //CONSTRUCTOR//
         public DrivetrainSubsystem(swerveModule... modules) {
             IMU = new ADIS16470_IMU();
             //pigeon = new Pigeon2(Constants.PigeonID,"Default Name");
             this.modules = modules;
             kinematics = new SwerveDriveKinematics(Constants.moduleLocations);
+
         }
     //SINGLETON//
         static DrivetrainSubsystem instance = new DrivetrainSubsystem(
@@ -100,5 +110,17 @@ public class DrivetrainSubsystem extends SubsystemBase{
                 modules[3].getSwerveModuleState()
             );
         }
+
+        public Command executeAimCommand() {
+            return runOnce(() -> {
+                var result = camera.getLatestResult();
+                boolean hasTargets = result.hasTargets();
+                PhotonTrackedTarget target = result.getBestTarget();
+                var translation = target.getBestCameraToTarget()
+                var xDistanceToTravel = translation.getX() - Constants.Motion.xoffset;
+                
+            });
+        }
     ////
+    /// Camera Data
 }
