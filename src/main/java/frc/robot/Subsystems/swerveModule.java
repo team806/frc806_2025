@@ -70,7 +70,7 @@ public class swerveModule extends SubsystemBase{
             //driveController.setI(Constants.Modules.SpeedKI);
             //driveController.setD(Constants.Modules.SpeedKD);
 
-            steerController = new PIDController(Constants.Modules.SteerKP, Constants.Modules.SteerKI, Constants.Modules.SteerKD);
+            steerController = new PIDController(Constants.DriveTrain.SteerKP, Constants.DriveTrain.SteerKI, Constants.DriveTrain.SteerKD);
             steerController.enableContinuousInput(0, 1);
 
         }
