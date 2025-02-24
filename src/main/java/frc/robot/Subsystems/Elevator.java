@@ -1,8 +1,8 @@
 
 
-package frc.robot.subsystems.elevator;
+package frc.robot.Subsystems;
 
-import static edu.wpi.first.units.Units.*;
+import edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Alert;
@@ -12,18 +12,15 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SelectCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import java.util.Map;
-import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.Logger;
 
-/**
- * The Elevator subsystem controls a dual-motor arm mechanism for game piece manipulation. It
- * supports multiple distances for different game actions and provides both open-loop and
- * closed-loop control options.
- */
+import java.lang.System.Logger;
+import java.util.Map;
+
+
+
 public class Elevator extends SubsystemBase {
   // Hardware interface and inputs
-  private final ElevatorIO io;
+  private final Elevator io;
   private final ElevatorIOInputsAutoLogged inputs;
 
   // Current arm distance mode
@@ -40,7 +37,7 @@ public class Elevator extends SubsystemBase {
    *
    * @param io The hardware interface implementation for the arm
    */
-  public Elevator(ElevatorIO io) {
+  public Elevator(Elevator io) {
     this.io = io;
     this.inputs = new ElevatorIOInputsAutoLogged();
     SmartDashboard.putData(this);
@@ -50,14 +47,19 @@ public class Elevator extends SubsystemBase {
   public void periodic() {
     // Update and log inputs from hardware
     io.updateInputs(inputs);
-    Logger.processInputs("Elevator", inputs);
-
-    // Update motor connection status alerts
-    leaderMotorAlert.set(!inputs.leaderConnected);
-    followerMotorAlert.set(!inputs.followerConnected);
-  }
-
-  /**
+        Logger.processInputs("Elevator", inputs);
+    
+        // Update motor connection status alerts
+        leaderMotorAlert.set(!inputs.leaderConnected);
+        followerMotorAlert.set(!inputs.followerConnected);
+      }
+    
+      private void updateInputs(ElevatorIOInputsAutoLogged inputs2) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'updateInputs'");
+      }
+    
+      /**
    * Runs the arm in closed-loop distance mode to the specified angle.
    *
    * @param distance The target angle distance
