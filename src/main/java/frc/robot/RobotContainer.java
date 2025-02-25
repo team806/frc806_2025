@@ -11,9 +11,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Subsystems.Climber;
 import frc.robot.Subsystems.DrivetrainSubsystem;
 
 public class RobotContainer {
+  private final Climber climber = new Climber(Constants.Climber.motorId);
 
   //private Robot robot;
 
