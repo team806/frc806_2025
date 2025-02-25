@@ -13,14 +13,14 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.math.system.plant.DCMotor;
 
 import edu.wpi.first.hal.HAL;
-import frc.robot.Subsystems.Intake;
-import frc.robot.Subsystems.IntakeState;
+import frc.robot.Subsystems.Processor;
+import frc.robot.Subsystems.ProcessorState;
 import frc.robot.Constants;
 import frc.robot.IO.SparkMaxIO;
 import frc.robot.Mocks.MockSparkMaxIO;
 
 public class IntakeTest {
-    Intake m_intake;
+    Processor m_intake;
     MockSparkMaxIO mockAngleMotorIO;
     MockSparkMaxIO mockIntakeMotorIO;
 
@@ -32,15 +32,15 @@ public class IntakeTest {
         // MotorType.kBrushless), motor);
         mockAngleMotorIO = new MockSparkMaxIO();
         mockIntakeMotorIO = new MockSparkMaxIO();
-        m_intake = new Intake(mockAngleMotorIO, mockIntakeMotorIO);
+        m_intake = new Processor(mockAngleMotorIO, mockIntakeMotorIO);
     }
 
     @Test
     void stateTest() {
         // Starts with intake retracted
         mockAngleMotorIO.setPosition(Constants.Intake.retractedSetPoint);
-        assertEquals(IntakeState.INTAKE_STATE_RETRACTED, m_intake.Update(false, false, false, false, false, 0.0, 0.0, 0, 0));
+        assertEquals(ProcessorState.STATE_RETRACTED, m_intake.Update(false, false, false, false, false, 0.0, 0.0, 0, 0));
         mockAngleMotorIO.setPosition(0.3);
-        assertEquals(IntakeState.INTAKE_STATE_AMP, m_intake.Update(false, false, false, false, false, 0.0, 0.0, 0, 0));
+        assertEquals(ProcessorState.STATE_AMP, m_intake.Update(false, false, false, false, false, 0.0, 0.0, 0, 0));
     }
 }
