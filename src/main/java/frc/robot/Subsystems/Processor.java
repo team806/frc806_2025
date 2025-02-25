@@ -15,23 +15,25 @@ import com.revrobotics.RelativeEncoder;
 
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import frc.robot.Utils;
-
+import frc.robot.Constants.Intake;
 import frc.robot.IO.SparkMaxIO;
 
-enum IntakeState { 
-    INTAKE_STATE_UNKNOWN,
-    INTAKE_STATE_RETRACTED,
-    INTAKE_STATE_AMP,
-    INTAKE_STATE_EXTENDED,
-    INTAKE_STATE_MOVING
+enum ProcessorState { 
+    STATE_UNKNOWN,
+    STATE_RETRACTED,
+    STATE_AMP,
+    STATE_EXTENDED,
+    STATE_MOVING
 }
 
 
-public class Intake extends SubsystemBase {
+public class Processor extends SubsystemBase {
     private final SparkMaxIO angleMotorIo;
     private final SparkMaxIO intakeMotorIo;
     private final PIDController angController = new PIDController(1.5, 0, 0);
@@ -42,44 +44,44 @@ public class Intake extends SubsystemBase {
     private boolean manualIntakeControl = false;
     private final double intakeRotationSpeed = 0.2;
     private double manualMovementSpeed = 0.0;
-    private IntakeState currentIntakeState;
-    private IntakeState desiredIntakeState;
-    public Intake(SparkMaxIO angleMotorIo, SparkMaxIO intakeMotorIo) {
+    private ProcessorState currentIntakeState;
+    private ProcessorState desiredIntakeState;
+    public Processor(SparkMaxIO angleMotorIo, SparkMaxIO intakeMotorIo) {
         this.angleMotorIo = angleMotorIo;
         this.intakeMotorIo = intakeMotorIo;
-        currentIntakeState = IntakeState.INTAKE_STATE_UNKNOWN;
-        desiredIntakeState = IntakeState.INTAKE_STATE_RETRACTED;
+        currentIntakeState = ProcessorState.STATE_UNKNOWN;
+        desiredIntakeState = ProcessorState.STATE_RETRACTED;
     }
 
     private void UpdateState(){
         double encoderAngle = angleMotorIo.getPosition();
         if (manualIntakeControl && manualMovementSpeed > 0){
-            currentIntakeState = IntakeState.INTAKE_STATE_MOVING;
+            currentIntakeState = ProcessorState.STATE_MOVING;
             return;
         }
 
         if (Utils.IsDoubleApproximately(encoderAngle, Constants.Intake.retractedSetPoint, Constants.Delta)){
-            currentIntakeState = IntakeState.INTAKE_STATE_RETRACTED;
+            currentIntakeState = ProcessorState.STATE_RETRACTED;
         } else if (Utils.IsDoubleApproximately(encoderAngle, Constants.Intake.ampSetPoint, 0.3)){
-            currentIntakeState = IntakeState.INTAKE_STATE_AMP;
+            currentIntakeState = ProcessorState.STATE_AMP;
         } else if (Utils.IsDoubleApproximately(encoderAngle, Constants.Intake.extendedSetPoint, Constants.Delta)){
-            currentIntakeState = IntakeState.INTAKE_STATE_EXTENDED;
+            currentIntakeState = ProcessorState.STATE_EXTENDED;
         } else {
-            currentIntakeState = IntakeState.INTAKE_STATE_MOVING;
+            currentIntakeState = ProcessorState.STATE_MOVING;
         }
     }
 
-    private double GetDesiredPosition(IntakeState intakeState){
-        if (intakeState == IntakeState.INTAKE_STATE_RETRACTED){
+    private double GetDesiredPosition(ProcessorState intakeState){
+        if (intakeState == ProcessorState.STATE_RETRACTED){
             return Constants.Intake.retractedSetPoint;
-        } else if (intakeState == IntakeState.INTAKE_STATE_AMP){
+        } else if (intakeState == ProcessorState.STATE_AMP){
             return Constants.Intake.ampSetPoint;
-        } else if (intakeState == IntakeState.INTAKE_STATE_EXTENDED){
+        } else if (intakeState == ProcessorState.STATE_EXTENDED){
             return Constants.Intake.extendedSetPoint;
         }
         return Constants.Intake.retractedSetPoint;
     }
-    private void SetDesiredState(IntakeState newDesiredIntakeState){
+    private void SetDesiredState(ProcessorState newDesiredIntakeState){
         manualIntakeControl = false;
         desiredIntakeState = newDesiredIntakeState;
         angController.setSetpoint(GetDesiredPosition(desiredIntakeState));
@@ -102,18 +104,17 @@ public class Intake extends SubsystemBase {
         }
         UpdateState();
     }
-
-    public IntakeState Update(
+    public ProcessorState Update(
         boolean retractButtonPressed, boolean ampButtonPressed,
       boolean extendButtonPressed, boolean raiseButtonPressed, 
       boolean lowerButtonPressed, double rightTriggerAxis, double leftTriggerAxis,
-      double ampShootSpeed, double speakerShootSpeed){
+      double inSpeed, double shootSpeed){
         if (retractButtonPressed){
-            SetDesiredState(IntakeState.INTAKE_STATE_RETRACTED);
+            SetDesiredState(ProcessorState.STATE_RETRACTED);
         } else if (ampButtonPressed){
-            SetDesiredState(IntakeState.INTAKE_STATE_AMP);
+            SetDesiredState(ProcessorState.STATE_AMP);
         } else if (extendButtonPressed){
-            SetDesiredState(IntakeState.INTAKE_STATE_EXTENDED);
+            SetDesiredState(ProcessorState.STATE_EXTENDED);
         } else if (raiseButtonPressed){
             ManualUpdate(intakeRotationSpeed);
         } else if (lowerButtonPressed){
@@ -123,15 +124,16 @@ public class Intake extends SubsystemBase {
         }
         RunLoop();
         if (rightTriggerAxis > 0.5){
-            if (currentIntakeState == IntakeState.INTAKE_STATE_AMP){
-                intakeMotorIo.setSpeed(ampShootSpeed);
-            } else {
-                intakeMotorIo.setSpeed(speakerShootSpeed);
-            }
+            intakeMotorIo.setSpeed(inSpeed);
         } else {
             intakeMotorIo.setSpeed(leftTriggerAxis * 0.5);
         }
         return currentIntakeState;
     }
+
+    public Command extendAndIntake =
+    Commands.runOnce(()->{SetDesiredState(ProcessorState.STATE_EXTENDED);})
+    .andThen(Commands.waitSeconds(0.25))
+    .andThen(Commands.runOnce(()->{intakeMotorIo.setSpeed(1.0);;})); //FIXME Idk why this keeps giving me an error. Im also not great with commands -Owen
 
 }

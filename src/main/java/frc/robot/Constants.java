@@ -43,12 +43,11 @@ public class Constants {
         
     }
 
-    public interface Intake{
+    public interface Intake{ //TODO figure out the real values for this section
 
         public static final double IntakeSpeed = 0;
-        public static final double SpeakerSpeed = 0;
-        public static final double AmpSpeed = 0;
-
+        public static final double ShootSpeed = 0;
+        
 
         public static final int AngMotorID = 16, ShootMotorID = 15, PingChannel = 0, EchoChannel = 1;
 

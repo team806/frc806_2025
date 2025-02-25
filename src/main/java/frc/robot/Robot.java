@@ -44,7 +44,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
 import frc.robot.Subsystems.DrivetrainSubsystem;
 import edu.wpi.first.cameraserver.CameraServer;
-import frc.robot.Subsystems.Intake;
+import frc.robot.Subsystems.Processor;
 import frc.robot.IO.RealSparkMaxIO;
 
 
@@ -59,15 +59,15 @@ public class Robot extends TimedRobot {
   //crap code//
   //ang motor
   RealSparkMaxIO angleMotorIo = new RealSparkMaxIO(Constants.Intake.AngMotorID, MotorType.kBrushless, RealSparkMaxIO.EncoderType.ENCODER_TYPE_ALTERNATE);
-  Intake intake;
+  Processor processor;
   PIDController angController = new PIDController(1.5,0 ,0);
   SlewRateLimiter angLimiter = new SlewRateLimiter(2);
   //wheel motor
   RealSparkMaxIO intakeMotorIo = new RealSparkMaxIO(Constants.Intake.ShootMotorID, MotorType.kBrushless);
   boolean shooting = false;
   boolean intaking = false;
-  double ampShootSpeed = -0.7;
-  double speakerShootSpeed = -1;
+  double inSpeed = 1;
+  double outSpeed = -1;
   double retractedSetpoint = 0.01318359375;
   double ampSetpoint = -0.5;
   double extendedSetpoint = -1.103515625;
@@ -122,7 +122,7 @@ public class Robot extends TimedRobot {
     wheelConfig.smartCurrentLimit(40);
     wheelConfig.idleMode(IdleMode.kCoast);
     intakeMotorIo.configure(wheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    intake = new Intake(angleMotorIo, intakeMotorIo);
+    processor = new Processor(angleMotorIo, intakeMotorIo);
     shooter1.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     shooter2.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -135,8 +135,8 @@ public class Robot extends TimedRobot {
 
     SmartDashboard.putNumber("translationPow", translationPow);
     SmartDashboard.putNumber("rotationPow", rotationPow);
-    SmartDashboard.putNumber("amp shoot speed", ampShootSpeed);
-    SmartDashboard.putNumber("speaker shoot speed", speakerShootSpeed);
+    SmartDashboard.putNumber("speaker shoot speed", outSpeed);
+    SmartDashboard.putNumber("speaker shoot speed", inSpeed);
     SmartDashboard.putNumber("retracted Setpoint", retractedSetpoint);
     SmartDashboard.putNumber("amp Setpoint", ampSetpoint);
     SmartDashboard.putNumber("extended Setpoint", extendedSetpoint);
@@ -205,9 +205,8 @@ public class Robot extends TimedRobot {
 
     translationPow = SmartDashboard.getNumber("translationPow", translationPow);
     rotationPow = SmartDashboard.getNumber("translationPow", rotationPow);
-    ampShootSpeed = SmartDashboard.getNumber("amp shoot speed", ampShootSpeed);
-    speakerShootSpeed = SmartDashboard.getNumber("speaker shoot speed", speakerShootSpeed);
-    SmartDashboard.getNumber("", ampShootSpeed);
+    inSpeed = SmartDashboard.getNumber("Processor Intake Speed", inSpeed);
+    outSpeed = SmartDashboard.getNumber("Processor shoot speed", outSpeed);
     retractedSetpoint = SmartDashboard.getNumber("retracted Setpoint", retractedSetpoint);
     ampSetpoint = SmartDashboard.getNumber("amp Setpoint", ampSetpoint);
     extendedSetpoint = SmartDashboard.getNumber("extended Setpoint", extendedSetpoint);
@@ -239,8 +238,8 @@ public class Robot extends TimedRobot {
       double rightTriggerAxis = coDriverController.getRightTriggerAxis();
       double leftTriggerAxis = coDriverController.getLeftTriggerAxis();
 
-      intake.Update(retractButtonPressed, ampButtonPressed, extendedButtonPressed, coDriverRightBumber, coDriverLeftBumber,
-      rightTriggerAxis, leftTriggerAxis, ampShootSpeed, speakerShootSpeed);
+      processor.Update(retractButtonPressed, ampButtonPressed, extendedButtonPressed, coDriverRightBumber, coDriverLeftBumber,
+      rightTriggerAxis, leftTriggerAxis, inSpeed, outSpeed);
 
     //shooter
       if(coDriverController.getYButtonPressed()){
