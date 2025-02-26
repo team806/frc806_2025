@@ -285,7 +285,7 @@ public class Robot extends TimedRobot {
       // );
 
       // driveController.x().whileTrue(DrivetrainSubsystem.getInstance().executeAimCommand());
-      driveController.x().whileTrue(DrivetrainSubsystem.getInstance().executeDriveForwardCommand());
+      driveController.x().whileTrue(DrivetrainSubsystem.getInstance().driveForward());
   }
 
 }
