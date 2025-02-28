@@ -132,7 +132,6 @@ public class Robot extends TimedRobot {
     // Initialize here to retrieve the details regarding the gyroscope.
     // Do not use to ensure that any changes to behavior of the subsystem are unobserved and do not
     // impact the driving and autonomous of the robot.
-    DrivetrainSubsystem.getInstance().resetGyro();
 
     SmartDashboard.putNumber("translationPow", translationPow);
     SmartDashboard.putNumber("rotationPow", rotationPow);

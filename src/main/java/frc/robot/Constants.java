@@ -40,7 +40,31 @@ public class Constants {
 
             public static final int RearRightDriveID   = 10, RearRightSteerID   = 11, RearRightEncoderID = 12;
             public static final double RearRightEncoderOffset = 0.95;//0.448730 rotations raw = 0.000244 rotations
-        
+    }
+
+    public interface Drivetrain {
+        public interface Odometry {
+            public static final double PositionStdDev = 0.1;
+            public static final double AngleStdDev = 0.1;
+        }
+
+        public interface Vision {
+            public static final double XConstantStdDev = 0.9;
+            public static final double XMagnitudeStdDev = 0.0;
+            public static final double YConstantStdDev = 0.9;
+            public static final double YMagnitudeStdDev = 0.0;
+            public static final double AngleStdDev = 0.1;
+
+            public static final double XRejectDistance = 1.0;
+            public static final double YRejectDistance = 1.0;
+
+            public static final double InitialTimeoutSeconds = 1.0;
+            public static final double TimeoutSeconds = 1.0;
+
+            public static final double TargetX = 0.0;
+            public static final double TargetY = -1.0;
+            public static final double TargetTheta = 0.0;
+        }
     }
 
     public interface Intake{
