@@ -83,6 +83,7 @@ public class Constants {
     public interface Motion {
             public static final double translationKP = 0.02, translationKI = 0, translationKD = 0;
             public static final double rotationKP = 0.02, rotationKI = 0, rotationKD = 0;
+            public static final double xoffset = 0.5, yoffset = 0.25;
     }
 
 }

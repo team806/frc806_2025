@@ -42,6 +42,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.PIDCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Subsystems.DrivetrainSubsystem;
 import edu.wpi.first.cameraserver.CameraServer;
 import frc.robot.Subsystems.Intake;
@@ -53,17 +54,17 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;                                  
 
-  XboxController driveController = new XboxController(0);
+  CommandXboxController driveController = new CommandXboxController(0);
   XboxController coDriverController = new XboxController(1);
 
   //crap code//
   //ang motor
-  RealSparkMaxIO angleMotorIo = new RealSparkMaxIO(Constants.Intake.AngMotorID, MotorType.kBrushless, RealSparkMaxIO.EncoderType.ENCODER_TYPE_ALTERNATE);
-  Intake intake;
-  PIDController angController = new PIDController(1.5,0 ,0);
-  SlewRateLimiter angLimiter = new SlewRateLimiter(2);
+  //RealSparkMaxIO angleMotorIo = new RealSparkMaxIO(Constants.Intake.AngMotorID, MotorType.kBrushless, RealSparkMaxIO.EncoderType.ENCODER_TYPE_ALTERNATE);
+  //Intake intake;
+  //PIDController angController = new PIDController(1.5,0 ,0);
+  //SlewRateLimiter angLimiter = new SlewRateLimiter(2);
   //wheel motor
-  RealSparkMaxIO intakeMotorIo = new RealSparkMaxIO(Constants.Intake.ShootMotorID, MotorType.kBrushless);
+  //RealSparkMaxIO intakeMotorIo = new RealSparkMaxIO(Constants.Intake.ShootMotorID, MotorType.kBrushless);
   boolean shooting = false;
   boolean intaking = false;
   double ampShootSpeed = -0.7;
@@ -76,19 +77,19 @@ public class Robot extends TimedRobot {
   boolean slow = false;
   boolean stop = false;
   //shooter
-  SparkMax shooter1 = new SparkMax(Constants.Shooter.aID, MotorType.kBrushless);
-  SparkMax shooter2 = new SparkMax(Constants.Shooter.bID, MotorType.kBrushless);
-  public void setShooterSpeed(double speed){shooter1.set(-speed);shooter2.set(speed);}
+  //SparkMax shooter1 = new SparkMax(Constants.Shooter.aID, MotorType.kBrushless);
+  //SparkMax shooter2 = new SparkMax(Constants.Shooter.bID, MotorType.kBrushless);
+  //public void setShooterSpeed(double speed){shooter1.set(-speed);shooter2.set(speed);}
   //pneumatics
-  PneumaticsControlModule PCM = new PneumaticsControlModule();
-  DoubleSolenoid solenoid;
+  //PneumaticsControlModule PCM = new PneumaticsControlModule();
+  //DoubleSolenoid solenoid;
   
-  public Command shoot = Commands.runOnce(()->{
-    setShooterSpeed(1.0);}).andThen(
-      Commands.waitSeconds(1)).andThen(
-        Commands.runOnce(()->{intakeMotorIo.setSpeed(-1);})).andThen(
-          Commands.waitSeconds(1)).andThen(
-            Commands.runOnce(()->{intakeMotorIo.setSpeed(0);setShooterSpeed(0);}));
+  // public Command shoot = Commands.runOnce(()->{
+  //   setShooterSpeed(1.0);}).andThen(
+  //     Commands.waitSeconds(1)).andThen(
+  //       Commands.runOnce(()->{intakeMotorIo.setSpeed(-1);})).andThen(
+  //         Commands.waitSeconds(1)).andThen(
+  //           Commands.runOnce(()->{intakeMotorIo.setSpeed(0);setShooterSpeed(0);}));
   public Command taxi = Commands.runOnce(()->{
     DrivetrainSubsystem.getInstance().driveFieldRelative(
       new ChassisSpeeds(-2,0,0));}).andThen(
@@ -106,27 +107,27 @@ public class Robot extends TimedRobot {
     //camera//
     CameraServer.startAutomaticCapture();
 
-    PCM.enableCompressorDigital();
-    solenoid = PCM.makeDoubleSolenoid(1, 0);
-    solenoid.set(Value.kReverse);
+    // PCM.enableCompressorDigital();
+    // solenoid = PCM.makeDoubleSolenoid(1, 0);
+    // solenoid.set(Value.kReverse);
 
     SparkMaxConfig config = new SparkMaxConfig();
     config.smartCurrentLimit(40);
     config.idleMode(IdleMode.kBrake);
-    AlternateEncoderConfig ang_alt_encoder_config = new AlternateEncoderConfig();
-    ang_alt_encoder_config.countsPerRevolution(8192);
-    config.alternateEncoder.apply(ang_alt_encoder_config);
-    angleMotorIo.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // AlternateEncoderConfig ang_alt_encoder_config = new AlternateEncoderConfig();
+    // ang_alt_encoder_config.countsPerRevolution(8192);
+    // config.alternateEncoder.apply(ang_alt_encoder_config);
+    // angleMotorIo.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     
-    SparkMaxConfig wheelConfig = new SparkMaxConfig();
-    wheelConfig.smartCurrentLimit(40);
-    wheelConfig.idleMode(IdleMode.kCoast);
-    intakeMotorIo.configure(wheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    intake = new Intake(angleMotorIo, intakeMotorIo);
-    shooter1.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    shooter2.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // SparkMaxConfig wheelConfig = new SparkMaxConfig();
+    // wheelConfig.smartCurrentLimit(40);
+    // wheelConfig.idleMode(IdleMode.kCoast);
+    // intakeMotorIo.configure(wheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // intake = new Intake(angleMotorIo, intakeMotorIo);
+    // shooter1.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // shooter2.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    angController.setSetpoint(0.01318359375);
+    // angController.setSetpoint(0.01318359375);
 
     // Initialize here to retrieve the details regarding the gyroscope.
     // Do not use to ensure that any changes to behavior of the subsystem are unobserved and do not
@@ -148,7 +149,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
 
-    SmartDashboard.putNumber("encoder Position", angleMotorIo.getPosition());
+    // SmartDashboard.putNumber("encoder Position", angleMotorIo.getPosition());
 
     CommandScheduler.getInstance().run();
   }
@@ -164,12 +165,12 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = shoot;
-    m_robotContainer.getAutonomousCommand();
+    // m_autonomousCommand = shoot;
+    // m_robotContainer.getAutonomousCommand();
 
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
-    }
+    // if (m_autonomousCommand != null) {
+    //   m_autonomousCommand.schedule();
+    // }
   }
 
   @Override
@@ -223,65 +224,68 @@ public class Robot extends TimedRobot {
   public void driveRobot(){
 
     //climber
-      if(driveController.getXButtonPressed()){
-        solenoid.set(Value.kReverse);
-      }else if(driveController.getAButtonPressed()){
-        solenoid.set(Value.kForward);
-      }
+      // if(driveController.getXButtonPressed()){
+      //   solenoid.set(Value.kReverse);
+      // }else if(driveController.getAButtonPressed()){
+      //   solenoid.set(Value.kForward);
+      // }
     //intake
-      boolean coDriverLeftBumber = coDriverController.getLeftBumperButton();
-      boolean coDriverRightBumber = coDriverController.getRightBumperButton();
+      // boolean coDriverLeftBumber = coDriverController.getLeftBumperButton();
+      // boolean coDriverRightBumber = coDriverController.getRightBumperButton();
 
-      double encoderAng = angleMotorIo.getPosition();
-      boolean retractButtonPressed = coDriverController.getAButtonPressed();
-      boolean ampButtonPressed = coDriverController.getLeftStickButtonPressed();
-      boolean extendedButtonPressed = coDriverController.getXButtonPressed();
-      double rightTriggerAxis = coDriverController.getRightTriggerAxis();
-      double leftTriggerAxis = coDriverController.getLeftTriggerAxis();
+      // double encoderAng = angleMotorIo.getPosition();
+      // boolean retractButtonPressed = coDriverController.getAButtonPressed();
+      // boolean ampButtonPressed = coDriverController.getLeftStickButtonPressed();
+      // boolean extendedButtonPressed = coDriverController.getXButtonPressed();
+      // double rightTriggerAxis = coDriverController.getRightTriggerAxis();
+      // double leftTriggerAxis = coDriverController.getLeftTriggerAxis();
 
-      intake.Update(retractButtonPressed, ampButtonPressed, extendedButtonPressed, coDriverRightBumber, coDriverLeftBumber,
-      rightTriggerAxis, leftTriggerAxis, ampShootSpeed, speakerShootSpeed);
+      // intake.Update(retractButtonPressed, ampButtonPressed, extendedButtonPressed, coDriverRightBumber, coDriverLeftBumber,
+      // rightTriggerAxis, leftTriggerAxis, ampShootSpeed, speakerShootSpeed);
 
     //shooter
-      if(coDriverController.getYButtonPressed()){
-        shooting=!shooting;
-        intaking=false;
-      }    
-      if(coDriverController.getBButtonPressed()){
-        intaking=!intaking;
-        shooting=false;
-      }
-      setShooterSpeed(shooting?1:intaking?-0.2 :0.3);
-      coDriverController.setRumble(RumbleType.kBothRumble, shooting?1:intaking?0.05:0);
+      // if(coDriverController.getYButtonPressed()){
+      //   shooting=!shooting;
+      //   intaking=false;
+      // }    
+      // if(coDriverController.getBButtonPressed()){
+      //   intaking=!intaking;
+      //   shooting=false;
+      // }
+      // setShooterSpeed(shooting?1:intaking?-0.2 :0.3);
+      // coDriverController.setRumble(RumbleType.kBothRumble, shooting?1:intaking?0.05:0);
 
     //gyro reset
-      if(driveController.getStartButtonPressed()){
-        DrivetrainSubsystem.getInstance().resetGyro();
-      }
+      // if(driveController.getStartButtonPressed()){
+      //   DrivetrainSubsystem.getInstance().resetGyro();
+      // }
 
     //drive
-      double x = driveController.getLeftX(),y = driveController.getLeftY(),theta = driveController.getRightX();
+      // double x = driveController.getLeftX(),y = driveController.getLeftY(),theta = driveController.getRightX();
       
-      if(Math.hypot(x, y) < Constants.controllerDeadband){x = 0; y = 0;}
-      if(Math.abs(theta) < Constants.controllerDeadband){theta = 0.0;} 
+      // if(Math.hypot(x, y) < Constants.controllerDeadband){x = 0; y = 0;}
+      // if(Math.abs(theta) < Constants.controllerDeadband){theta = 0.0;} 
 
-      x = (x > 0)? Math.abs(Math.pow(x,translationPow)) : -Math.abs(Math.pow(x,translationPow));
-      y = (y > 0)? Math.abs(Math.pow(y,translationPow)) : -Math.abs(Math.pow(y,translationPow));
-      theta = (theta>0)? Math.abs(Math.pow(theta,rotationPow)) : -Math.abs(Math.pow(theta,rotationPow));
+      // x = (x > 0)? Math.abs(Math.pow(x,translationPow)) : -Math.abs(Math.pow(x,translationPow));
+      // y = (y > 0)? Math.abs(Math.pow(y,translationPow)) : -Math.abs(Math.pow(y,translationPow));
+      // theta = (theta>0)? Math.abs(Math.pow(theta,rotationPow)) : -Math.abs(Math.pow(theta,rotationPow));
 
-      slow = driveController.getLeftBumperButton();
+      // slow = driveController.getLeftBumperButton();
       //if(slow){DrivetrainSubsystem.getInstance().driveFieldRelative(new ChassisSpeeds(
       //  y * Constants.attainableMaxTranslationalSpeedMPS * 0.25, 
       //  x * Constants.attainableMaxTranslationalSpeedMPS * 0.25, 
       //  theta * Constants.attainableMaxRotationalVelocityRPS * 0.25));}
 
-      double slowModeFactor = (driveController.getLeftTriggerAxis()*3)+1;
+      // double slowModeFactor = (driveController.getLeftTriggerAxis()*3)+1;
 
-      DrivetrainSubsystem.getInstance().driveFieldRelative(new ChassisSpeeds(
-        (y * Constants.attainableMaxTranslationalSpeedMPS) / slowModeFactor, 
-        (x * Constants.attainableMaxTranslationalSpeedMPS) / slowModeFactor, 
-        (theta * Constants.attainableMaxRotationalVelocityRPS) / slowModeFactor)
-      );
+      // DrivetrainSubsystem.getInstance().driveFieldRelative(new ChassisSpeeds(
+      //   (y * Constants.attainableMaxTranslationalSpeedMPS) / slowModeFactor, 
+      //   (x * Constants.attainableMaxTranslationalSpeedMPS) / slowModeFactor, 
+      //   (theta * Constants.attainableMaxRotationalVelocityRPS) / slowModeFactor)
+      // );
+
+      // driveController.x().whileTrue(DrivetrainSubsystem.getInstance().executeAimCommand());
+      driveController.x().whileTrue(DrivetrainSubsystem.getInstance().executeDriveForwardCommand());
   }
 
 }
