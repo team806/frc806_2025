@@ -59,12 +59,12 @@ public class Robot extends TimedRobot {
 
   //crap code//
   //ang motor
-  RealSparkMaxIO angleMotorIo = new RealSparkMaxIO(Constants.Intake.AngMotorID, MotorType.kBrushless, RealSparkMaxIO.EncoderType.ENCODER_TYPE_ALTERNATE);
-  Intake intake;
-  PIDController angController = new PIDController(1.5,0 ,0);
-  SlewRateLimiter angLimiter = new SlewRateLimiter(2);
+  //RealSparkMaxIO angleMotorIo = new RealSparkMaxIO(Constants.Intake.AngMotorID, MotorType.kBrushless, RealSparkMaxIO.EncoderType.ENCODER_TYPE_ALTERNATE);
+  //Intake intake;
+  //PIDController angController = new PIDController(1.5,0 ,0);
+  //SlewRateLimiter angLimiter = new SlewRateLimiter(2);
   //wheel motor
-  RealSparkMaxIO intakeMotorIo = new RealSparkMaxIO(Constants.Intake.ShootMotorID, MotorType.kBrushless);
+  //RealSparkMaxIO intakeMotorIo = new RealSparkMaxIO(Constants.Intake.ShootMotorID, MotorType.kBrushless);
   boolean shooting = false;
   boolean intaking = false;
   double ampShootSpeed = -0.7;
@@ -77,19 +77,19 @@ public class Robot extends TimedRobot {
   boolean slow = false;
   boolean stop = false;
   //shooter
-  SparkMax shooter1 = new SparkMax(Constants.Shooter.aID, MotorType.kBrushless);
-  SparkMax shooter2 = new SparkMax(Constants.Shooter.bID, MotorType.kBrushless);
-  public void setShooterSpeed(double speed){shooter1.set(-speed);shooter2.set(speed);}
+  //SparkMax shooter1 = new SparkMax(Constants.Shooter.aID, MotorType.kBrushless);
+  //SparkMax shooter2 = new SparkMax(Constants.Shooter.bID, MotorType.kBrushless);
+  //public void setShooterSpeed(double speed){shooter1.set(-speed);shooter2.set(speed);}
   //pneumatics
-  PneumaticsControlModule PCM = new PneumaticsControlModule();
-  DoubleSolenoid solenoid;
+  //PneumaticsControlModule PCM = new PneumaticsControlModule();
+  //DoubleSolenoid solenoid;
   
-  public Command shoot = Commands.runOnce(()->{
-    setShooterSpeed(1.0);}).andThen(
-      Commands.waitSeconds(1)).andThen(
-        Commands.runOnce(()->{intakeMotorIo.setSpeed(-1);})).andThen(
-          Commands.waitSeconds(1)).andThen(
-            Commands.runOnce(()->{intakeMotorIo.setSpeed(0);setShooterSpeed(0);}));
+  // public Command shoot = Commands.runOnce(()->{
+  //   setShooterSpeed(1.0);}).andThen(
+  //     Commands.waitSeconds(1)).andThen(
+  //       Commands.runOnce(()->{intakeMotorIo.setSpeed(-1);})).andThen(
+  //         Commands.waitSeconds(1)).andThen(
+  //           Commands.runOnce(()->{intakeMotorIo.setSpeed(0);setShooterSpeed(0);}));
   public Command taxi = Commands.runOnce(()->{
     DrivetrainSubsystem.getInstance().driveFieldRelative(
       new ChassisSpeeds(-2,0,0));}).andThen(
@@ -107,27 +107,27 @@ public class Robot extends TimedRobot {
     //camera//
     CameraServer.startAutomaticCapture();
 
-    PCM.enableCompressorDigital();
-    solenoid = PCM.makeDoubleSolenoid(1, 0);
-    solenoid.set(Value.kReverse);
+    // PCM.enableCompressorDigital();
+    // solenoid = PCM.makeDoubleSolenoid(1, 0);
+    // solenoid.set(Value.kReverse);
 
     SparkMaxConfig config = new SparkMaxConfig();
     config.smartCurrentLimit(40);
     config.idleMode(IdleMode.kBrake);
-    AlternateEncoderConfig ang_alt_encoder_config = new AlternateEncoderConfig();
-    ang_alt_encoder_config.countsPerRevolution(8192);
-    config.alternateEncoder.apply(ang_alt_encoder_config);
-    angleMotorIo.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // AlternateEncoderConfig ang_alt_encoder_config = new AlternateEncoderConfig();
+    // ang_alt_encoder_config.countsPerRevolution(8192);
+    // config.alternateEncoder.apply(ang_alt_encoder_config);
+    // angleMotorIo.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     
-    SparkMaxConfig wheelConfig = new SparkMaxConfig();
-    wheelConfig.smartCurrentLimit(40);
-    wheelConfig.idleMode(IdleMode.kCoast);
-    intakeMotorIo.configure(wheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    intake = new Intake(angleMotorIo, intakeMotorIo);
-    shooter1.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    shooter2.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // SparkMaxConfig wheelConfig = new SparkMaxConfig();
+    // wheelConfig.smartCurrentLimit(40);
+    // wheelConfig.idleMode(IdleMode.kCoast);
+    // intakeMotorIo.configure(wheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // intake = new Intake(angleMotorIo, intakeMotorIo);
+    // shooter1.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    // shooter2.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    angController.setSetpoint(0.01318359375);
+    // angController.setSetpoint(0.01318359375);
 
     // Initialize here to retrieve the details regarding the gyroscope.
     // Do not use to ensure that any changes to behavior of the subsystem are unobserved and do not
@@ -149,7 +149,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
 
-    SmartDashboard.putNumber("encoder Position", angleMotorIo.getPosition());
+    // SmartDashboard.putNumber("encoder Position", angleMotorIo.getPosition());
 
     CommandScheduler.getInstance().run();
   }
