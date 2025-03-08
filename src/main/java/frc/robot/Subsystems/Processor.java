@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import frc.robot.Utils;
-import frc.robot.Constants.Intake;
+import frc.robot.Constants.Pconstants;
 import frc.robot.IO.SparkMaxIO;
 
 enum ProcessorState { 
@@ -60,11 +60,11 @@ public class Processor extends SubsystemBase {
             return;
         }
 
-        if (Utils.IsDoubleApproximately(encoderAngle, Constants.Intake.retractedSetPoint, Constants.Delta)){
+        if (Utils.IsDoubleApproximately(encoderAngle, Constants.Pconstants.retractedSetPoint, Constants.Delta)){
             currentIntakeState = ProcessorState.STATE_RETRACTED;
-        } else if (Utils.IsDoubleApproximately(encoderAngle, Constants.Intake.ampSetPoint, 0.3)){
+        } else if (Utils.IsDoubleApproximately(encoderAngle, Constants.Pconstants.ampSetPoint, 0.3)){
             currentIntakeState = ProcessorState.STATE_AMP;
-        } else if (Utils.IsDoubleApproximately(encoderAngle, Constants.Intake.extendedSetPoint, Constants.Delta)){
+        } else if (Utils.IsDoubleApproximately(encoderAngle, Constants.Pconstants.extendedSetPoint, Constants.Delta)){
             currentIntakeState = ProcessorState.STATE_EXTENDED;
         } else {
             currentIntakeState = ProcessorState.STATE_MOVING;
@@ -73,13 +73,13 @@ public class Processor extends SubsystemBase {
 
     private double GetDesiredPosition(ProcessorState intakeState){
         if (intakeState == ProcessorState.STATE_RETRACTED){
-            return Constants.Intake.retractedSetPoint;
+            return Constants.Pconstants.retractedSetPoint;
         } else if (intakeState == ProcessorState.STATE_AMP){
-            return Constants.Intake.ampSetPoint;
+            return Constants.Pconstants.ampSetPoint;
         } else if (intakeState == ProcessorState.STATE_EXTENDED){
-            return Constants.Intake.extendedSetPoint;
+            return Constants.Pconstants.extendedSetPoint;
         }
-        return Constants.Intake.retractedSetPoint;
+        return Constants.Pconstants.retractedSetPoint;
     }
     private void SetDesiredState(ProcessorState newDesiredIntakeState){
         manualIntakeControl = false;
@@ -131,9 +131,14 @@ public class Processor extends SubsystemBase {
         return currentIntakeState;
     }
 
-    public Command extendAndIntake =
-    Commands.runOnce(()->{SetDesiredState(ProcessorState.STATE_EXTENDED);})
-    .andThen(Commands.waitSeconds(0.25))
-    .andThen(Commands.runOnce(()->{intakeMotorIo.setSpeed(1.0);;})); //FIXME Idk why this keeps giving me an error. Im also not great with commands -Owen
-
+    public Command extendAndIntake(){
+        return this.runOnce(()->SetDesiredState(ProcessorState.STATE_EXTENDED)).andThen(Commands.waitSeconds(0.5)).andThen(()->intakeMotorIo.setSpeed(intakeRotationSpeed));
+    }
+    public Command stopWheel(){
+        return this.runOnce(()->intakeMotorIo.setSpeed(0));
+    }
+    public Command retract(){
+        return this.runOnce(()->SetDesiredState(ProcessorState.STATE_RETRACTED)).andThen(()->intakeMotorIo.setSpeed(0.1));
+    }
+    //TODO finish commands, what else do we want?
 }

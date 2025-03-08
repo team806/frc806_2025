@@ -42,8 +42,8 @@ public class Constants {
             public static final double RearRightEncoderOffset = 0.95;//0.448730 rotations raw = 0.000244 rotations
         
     }
-
-    public interface Intake{ //TODO figure out the real values for this section
+                //TODO not really a todo, but i had to name it this way or java got mad at me
+    public interface Pconstants{ //TODO figure out the real values for this section 
 
         public static final double IntakeSpeed = 0;
         public static final double ShootSpeed = 0;
