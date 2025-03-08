@@ -81,7 +81,9 @@ public class swerveModule extends SubsystemBase{
             //  driveController.setReference(targetState.speedMetersPerSecond / DRIVE_VELOCITY_CONVERSION, ControlType.kVelocity);
 
             // FUNCTIONING
-            steerMotor.set(-steerController.calculate(getModuleAngRotations(),targetState.angle.getRotations()));
+            double currentAngle = getModuleAngRotations();
+            steerMotor.set(-steerController.calculate(currentAngle, targetState.angle.getRotations()));
+            targetState.speedMetersPerSecond *= targetState.angle.minus(new Rotation2d(currentAngle*2*Math.PI)).getCos();
             driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS); 
         }
     //FEEDBACK//
