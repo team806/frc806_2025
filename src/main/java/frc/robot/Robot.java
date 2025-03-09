@@ -284,8 +284,10 @@ public class Robot extends TimedRobot {
       //   (theta * Constants.attainableMaxRotationalVelocityRPS) / slowModeFactor)
       // );
 
-      // driveController.x().whileTrue(DrivetrainSubsystem.getInstance().executeAimCommand());
-      driveController.x().whileTrue(DrivetrainSubsystem.getInstance().executeDriveForwardCommand());
+      driveController.x().whileTrue(DrivetrainSubsystem.getInstance().executeAimCommand());
+      driveController.y().whileTrue(DrivetrainSubsystem.getInstance().executeDriveForwardCommand());
+      driveController.b().whileTrue(DrivetrainSubsystem.getInstance().executeDriveSidewaysCommand());
+      driveController.a().whileTrue(DrivetrainSubsystem.getInstance().executeSpinCommand());
   }
 
 }

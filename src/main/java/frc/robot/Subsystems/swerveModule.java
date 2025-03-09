@@ -20,8 +20,11 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 public class swerveModule extends SubsystemBase{
 
+    int driveMotorID;
     //drive 
     SparkMax driveMotor;
     SparkAbsoluteEncoder driveMotorEncoder;
@@ -44,6 +47,7 @@ public class swerveModule extends SubsystemBase{
 
     //CONSTRUCTOR//
         public swerveModule(int driveMotorID, int steerMotorID, int encoderID, Double encoderOffsetRotations){
+            this.driveMotorID = driveMotorID;
 
             //drive motor 
             driveMotor = new SparkMax(driveMotorID, MotorType.kBrushless);
@@ -71,7 +75,7 @@ public class swerveModule extends SubsystemBase{
             //driveController.setD(Constants.Modules.SpeedKD);
 
             steerController = new PIDController(Constants.Modules.SteerKP, Constants.Modules.SteerKI, Constants.Modules.SteerKD);
-            steerController.enableContinuousInput(0, 1);
+            steerController.enableContinuousInput(-0.5 - encoderOffsetRotations, 0.5 - encoderOffsetRotations);
 
         }
     //DRIVE//
@@ -82,6 +86,7 @@ public class swerveModule extends SubsystemBase{
 
             // FUNCTIONING
             steerMotor.set(-steerController.calculate(getModuleAngRotations(),targetState.angle.getRotations()));
+            SmartDashboard.putNumber(driveMotorID + " motor", targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS);
             driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS); 
         }
     //FEEDBACK//

@@ -7,6 +7,10 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 
+import static edu.wpi.first.units.Units.Radians;
+
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 //import com.ctre.phoenix6.hardware.Pigeon2;
 
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -33,8 +37,8 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 public class DrivetrainSubsystem extends SubsystemBase{
 
     ////
-        ADIS16470_IMU IMU;
-        Pigeon2 pigeon;
+        // ADIS16470_IMU IMU;
+        // Pigeon2 pigeon;
         public swerveModule[] modules;
         SwerveDriveKinematics kinematics;
         //SwerveDriveOdometry odometry;
@@ -46,13 +50,13 @@ public class DrivetrainSubsystem extends SubsystemBase{
         SlewRateLimiter rotationLimiter = new SlewRateLimiter(rotationMaxAccelerationRadiansPerSecondSquared);
         PhotonCamera camera = new PhotonCamera("photonvision");
 
-        private final PIDController visionForwardBackController = new PIDController(0, 0, 0);
-        private final PIDController visionSidewaysController = new PIDController(0, 0, 0);
-        private final PIDController visionRotationsController = new PIDController(0, 0, 0);
+        private final PIDController visionForwardBackController = new PIDController(25, 0, 0.5);
+        private final PIDController visionSidewaysController = new PIDController(5, 0, 0.1);
+        private final PIDController visionRotationsController = new PIDController(5, 0, 0);
 
     //CONSTRUCTOR//
         public DrivetrainSubsystem(swerveModule... modules) {
-            IMU = new ADIS16470_IMU();
+            //IMU = new ADIS16470_IMU();
             //pigeon = new Pigeon2(Constants.PigeonID,"Default Name");
             this.modules = modules;
             kinematics = new SwerveDriveKinematics(Constants.moduleLocations);
@@ -61,12 +65,36 @@ public class DrivetrainSubsystem extends SubsystemBase{
             visionSidewaysController.setTolerance(0);
             visionRotationsController.setTolerance(0);
 
+            visionRotationsController.enableContinuousInput(-Math.PI, Math.PI);
+
             setDefaultCommand(
-                runOnce(
+                run(
                         () -> {
                         drive(new ChassisSpeeds(0, 0, 0));
+
+                        // var results = camera.getAllUnreadResults();
+                        // if (!results.isEmpty()) {
+                        //     var result = results.get(results.size() - 1);
+                        //     if (result.hasTargets()) {
+                        //         var bestTarget = result.getBestTarget();
+                        //         if (bestTarget != null) {
+                        //             var translation = bestTarget.getBestCameraToTarget();
+                        //             var forwardVelocity = MathUtil.clamp(visionForwardBackController.calculate(-translation.getX(), -1), -1, 1);
+                        //             var sidewaysVelocity = MathUtil.clamp(visionSidewaysController.calculate(-translation.getY(), 0), -1, 1);
+                        //             var angularVelcoity = MathUtil.clamp(visionRotationsController.calculate(bestTarget.getYaw(), 0.08), -1, 1);
+                        //             // angularVelcoity = 0;
+
+                        //             SmartDashboard.putNumber("x", translation.getX());
+                        //             SmartDashboard.putNumber("y", translation.getY());
+                        //             SmartDashboard.putNumber("yaw", bestTarget.getYaw());
+
+                        //             var speeds = new ChassisSpeeds(forwardVelocity, sidewaysVelocity, angularVelcoity);
+                        //             drive(speeds);
+                        //         }
+                        //     }
+                        // }
                         })
-                    .andThen(run(() -> {}))
+                    // .andThen(run(() -> {}))
                     .withName("Idle"));
 
         }
@@ -80,19 +108,20 @@ public class DrivetrainSubsystem extends SubsystemBase{
         public static DrivetrainSubsystem getInstance() {return instance;}
     //GYRO//
         public Rotation2d getGyroscopeRotation() {
-            return Rotation2d.fromDegrees(IMU.getAngle());
+            // return Rotation2d.fromDegrees(IMU.getAngle());
             //return Rotation2d.fromDegrees(pigeon.getRoll().getValueAsDouble());
+            return new Rotation2d();
         }
         
 
 
         public void calibrateGyro(){
-            IMU.calibrate();
+            // IMU.calibrate();
             //pigeon.
         }
 
         public void resetGyro(){
-            IMU.reset();
+            // IMU.reset();
             //pigeon.
         }
     //DRIVING//
@@ -117,6 +146,19 @@ public class DrivetrainSubsystem extends SubsystemBase{
             modules[2].setTargetState(SwerveModuleState.optimize(targetStates[2], Rotation2d.fromRotations(modules[2].getModuleAngRotations())));
             modules[3].setTargetState(SwerveModuleState.optimize(targetStates[3], Rotation2d.fromRotations(modules[3].getModuleAngRotations())));
 
+            SmartDashboard.putNumber("DT 0 S", targetStates[0].speedMetersPerSecond);
+            SmartDashboard.putNumber("DT 0 A", targetStates[0].angle.getDegrees());
+            SmartDashboard.putNumber("DT 1 S", targetStates[1].speedMetersPerSecond);
+            SmartDashboard.putNumber("DT 1 A", targetStates[1].angle.getDegrees());
+            SmartDashboard.putNumber("DT 2 S", targetStates[2].speedMetersPerSecond);
+            SmartDashboard.putNumber("DT 2 A", targetStates[2].angle.getDegrees());
+            SmartDashboard.putNumber("DT 3 S", targetStates[3].speedMetersPerSecond);
+            SmartDashboard.putNumber("DT 3 A", targetStates[3].angle.getDegrees());
+
+            SmartDashboard.putNumber("DT 0 Aa", modules[0].getModuleAngRotations());
+            SmartDashboard.putNumber("DT 1 Aa", modules[1].getModuleAngRotations());
+            SmartDashboard.putNumber("DT 2 Aa", modules[2].getModuleAngRotations());
+            SmartDashboard.putNumber("DT 3 Aa", modules[3].getModuleAngRotations());
         }
     //FEEDBACK//
         public SwerveModulePosition[] getModulePositions(){
@@ -143,9 +185,15 @@ public class DrivetrainSubsystem extends SubsystemBase{
                             var bestTarget = result.getBestTarget();
                             if (bestTarget != null) {
                                 var translation = bestTarget.getBestCameraToTarget();
-                                var forwardVelocity = MathUtil.clamp(visionForwardBackController.calculate(translation.getX(), 0), -0.1, 0.1);
-                                var sidewaysVelocity = MathUtil.clamp(visionSidewaysController.calculate(translation.getY(), 0), -0.1, 0.1);
-                                var angularVelcoity = MathUtil.clamp(visionRotationsController.calculate(bestTarget.getYaw(), 0), -0.1, 0.1);
+                                var forwardVelocity = MathUtil.clamp(visionForwardBackController.calculate(-translation.getX(), -1), -1, 1);
+                                var sidewaysVelocity = MathUtil.clamp(visionSidewaysController.calculate(-translation.getY(), 0), -1, 1);
+                                var angularVelcoity = MathUtil.clamp(visionRotationsController.calculate(translation.getRotation().getMeasureZ().in(Radians), Math.PI), -1, 1);
+
+                                var rotation = translation.getRotation();
+
+                                SmartDashboard.putNumber("x", translation.getX());
+                                SmartDashboard.putNumber("y", translation.getY());
+                                SmartDashboard.putNumber("yaw", translation.getRotation().getMeasureZ().in(Radians));
 
                                 var speeds = new ChassisSpeeds(forwardVelocity, sidewaysVelocity, angularVelcoity);
                                 drive(speeds);
@@ -163,7 +211,19 @@ public class DrivetrainSubsystem extends SubsystemBase{
 
         public Command executeDriveForwardCommand() {
             return run(() -> {
-                driveFieldRelative(new ChassisSpeeds(0.1, 0, 0));
+                driveFieldRelative(new ChassisSpeeds(1.5, 0, 0));
+            });
+        }
+
+        public Command executeDriveSidewaysCommand() {
+            return run(() -> {
+                driveFieldRelative(new ChassisSpeeds(0, 1.5, 0));
+            });
+        }
+
+        public Command executeSpinCommand() {
+            return run(() -> {
+                driveFieldRelative(new ChassisSpeeds(0, 0, 1.5));
             });
         }
     ////
