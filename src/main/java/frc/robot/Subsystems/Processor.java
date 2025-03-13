@@ -20,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Utils;
 import frc.robot.Constants.Pconstants;
 import frc.robot.IO.SparkMaxIO;
@@ -29,15 +30,17 @@ enum ProcessorState {
     STATE_RETRACTED,
     STATE_AMP,
     STATE_EXTENDED,
-    STATE_MOVING
+    STATE_MOVING, STATE_TRANSPORT
 }
 
 
 public class Processor extends SubsystemBase {
     private final SparkMaxIO angleMotorIo;
     private final SparkMaxIO intakeMotorIo;
+    private final DigitalInput algaeSensor;
     private final PIDController angController = new PIDController(1.5, 0, 0);
     private final SlewRateLimiter angLimiter = new SlewRateLimiter(2);
+
 
 
 
@@ -46,9 +49,10 @@ public class Processor extends SubsystemBase {
     private double manualMovementSpeed = 0.0;
     private ProcessorState currentIntakeState;
     private ProcessorState desiredIntakeState;
-    public Processor(SparkMaxIO angleMotorIo, SparkMaxIO intakeMotorIo) {
+    public Processor(SparkMaxIO angleMotorIo, SparkMaxIO intakeMotorIo, int algaeSensorPort) {
         this.angleMotorIo = angleMotorIo;
         this.intakeMotorIo = intakeMotorIo;
+        algaeSensor = new DigitalInput(algaeSensorPort);
         currentIntakeState = ProcessorState.STATE_UNKNOWN;
         desiredIntakeState = ProcessorState.STATE_RETRACTED;
     }
@@ -105,17 +109,10 @@ public class Processor extends SubsystemBase {
         UpdateState();
     }
     public ProcessorState Update(
-        boolean retractButtonPressed, boolean ampButtonPressed,
-      boolean extendButtonPressed, boolean raiseButtonPressed, 
+        boolean raiseButtonPressed, 
       boolean lowerButtonPressed, double rightTriggerAxis, double leftTriggerAxis,
       double inSpeed, double shootSpeed){
-        if (retractButtonPressed){
-            SetDesiredState(ProcessorState.STATE_RETRACTED);
-        } else if (ampButtonPressed){
-            SetDesiredState(ProcessorState.STATE_AMP);
-        } else if (extendButtonPressed){
-            SetDesiredState(ProcessorState.STATE_EXTENDED);
-        } else if (raiseButtonPressed){
+        if (raiseButtonPressed){
             ManualUpdate(intakeRotationSpeed);
         } else if (lowerButtonPressed){
             ManualUpdate(-intakeRotationSpeed);
@@ -131,14 +128,33 @@ public class Processor extends SubsystemBase {
         return currentIntakeState;
     }
 
-    public Command extendAndIntake(){
-        return this.runOnce(()->SetDesiredState(ProcessorState.STATE_EXTENDED)).andThen(Commands.waitSeconds(0.5)).andThen(()->intakeMotorIo.setSpeed(intakeRotationSpeed));
+    public Command extend(){
+        return this.run(()-> SetDesiredState(ProcessorState.STATE_EXTENDED));
     }
-    public Command stopWheel(){
-        return this.runOnce(()->intakeMotorIo.setSpeed(0));
+
+    public Command transport(){
+        return this.run(()-> SetDesiredState(ProcessorState.STATE_TRANSPORT));
     }
-    public Command retract(){
-        return this.runOnce(()->SetDesiredState(ProcessorState.STATE_RETRACTED)).andThen(()->intakeMotorIo.setSpeed(0.1));
+
+    public Command store(){
+        return this.run(()-> SetDesiredState(ProcessorState.STATE_RETRACTED));
     }
-    //TODO finish commands, what else do we want?
+
+    public Command score(){
+        return this.run(()-> SetDesiredState(ProcessorState.STATE_AMP));
+    }
+
+    public Command intake(){
+        return this.run(()-> intakeMotorIo.setSpeed(0.5)).until(algaeSensor::get);
+    }
+
+    public Command shoot(){
+        return this.run(()-> intakeMotorIo.setSpeed(-1));
+    }
+
+    public Command hold(){
+        return this.run(()-> intakeMotorIo.setSpeed(0.1));
+    }
+
+    
 }

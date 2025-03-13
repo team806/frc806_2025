@@ -58,12 +58,12 @@ public class Robot extends TimedRobot {
 
   //crap code//
   //ang motor
-  RealSparkMaxIO angleMotorIo = new RealSparkMaxIO(Constants.Intake.AngMotorID, MotorType.kBrushless, RealSparkMaxIO.EncoderType.ENCODER_TYPE_ALTERNATE);
+  RealSparkMaxIO angleMotorIo = new RealSparkMaxIO(Constants.Pconstants.AngMotorID, MotorType.kBrushless, RealSparkMaxIO.EncoderType.ENCODER_TYPE_ALTERNATE);
   Processor processor;
   PIDController angController = new PIDController(1.5,0 ,0);
   SlewRateLimiter angLimiter = new SlewRateLimiter(2);
   //wheel motor
-  RealSparkMaxIO intakeMotorIo = new RealSparkMaxIO(Constants.Intake.ShootMotorID, MotorType.kBrushless);
+  RealSparkMaxIO intakeMotorIo = new RealSparkMaxIO(Constants.Pconstants.ShootMotorID, MotorType.kBrushless);
   boolean shooting = false;
   boolean intaking = false;
   double inSpeed = 1;
@@ -122,7 +122,8 @@ public class Robot extends TimedRobot {
     wheelConfig.smartCurrentLimit(40);
     wheelConfig.idleMode(IdleMode.kCoast);
     intakeMotorIo.configure(wheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-    processor = new Processor(angleMotorIo, intakeMotorIo);
+    int algaeSensorPort = 0; //FIXME install alage sensor and assign port
+        processor = new Processor(angleMotorIo, intakeMotorIo, algaeSensorPort);
     shooter1.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     shooter2.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -231,14 +232,11 @@ public class Robot extends TimedRobot {
       boolean coDriverLeftBumber = coDriverController.getLeftBumperButton();
       boolean coDriverRightBumber = coDriverController.getRightBumperButton();
 
-      double encoderAng = angleMotorIo.getPosition();
-      boolean retractButtonPressed = coDriverController.getAButtonPressed();
-      boolean ampButtonPressed = coDriverController.getLeftStickButtonPressed();
-      boolean extendedButtonPressed = coDriverController.getXButtonPressed();
+
       double rightTriggerAxis = coDriverController.getRightTriggerAxis();
       double leftTriggerAxis = coDriverController.getLeftTriggerAxis();
 
-      processor.Update(retractButtonPressed, ampButtonPressed, extendedButtonPressed, coDriverRightBumber, coDriverLeftBumber,
+      processor.Update(coDriverRightBumber, coDriverLeftBumber,
       rightTriggerAxis, leftTriggerAxis, inSpeed, outSpeed);
 
     //shooter
