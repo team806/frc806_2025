@@ -43,6 +43,14 @@ public class Constants {
         
     }
 
+    public interface Drivetrain {
+        public static final double TranslationPow = 3;
+        public static final double RotationPow = 3;
+        
+        public static final double SlowFactor = 3;
+        public static final double SlowFactorOffset = 1;
+    }
+
     public interface Intake{
 
         public static final double IntakeSpeed = 0;
