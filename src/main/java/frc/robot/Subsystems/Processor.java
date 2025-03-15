@@ -18,6 +18,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -145,7 +146,7 @@ public class Processor extends SubsystemBase {
     }
 
     public Command intake(){
-        return this.run(()-> intakeMotorIo.setSpeed(0.5)).until(algaeSensor::get);
+        return this.run(()-> intakeMotorIo.setSpeed(0.5));
     }
 
     public Command shoot(){
@@ -154,6 +155,28 @@ public class Processor extends SubsystemBase {
 
     public Command hold(){
         return this.run(()-> intakeMotorIo.setSpeed(0.1));
+    }
+
+
+    public Command autointake(){
+        return this.startRun(
+            ()->SetDesiredState(ProcessorState.STATE_EXTENDED),
+                 ()-> intake().until(algaeSensor::get)
+                 .andThen(
+                    Commands.parallel(
+                        transport(),
+                            hold()
+                    )));
+    }
+
+    public Command autoshoot(){
+        return this.startRun(
+            ()->SetDesiredState(ProcessorState.STATE_AMP),
+                ()->shoot()
+                    .andThen(
+                        store()
+                    ));
+             
     }
 
     
