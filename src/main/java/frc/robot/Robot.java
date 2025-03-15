@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim.KitbotGearing;
@@ -53,7 +54,7 @@ public class Robot extends TimedRobot {
 
   private RobotContainer m_robotContainer;                                  
 
-  XboxController driveController = new XboxController(0);
+  CommandXboxController driveController = new CommandXboxController(0);
   XboxController coDriverController = new XboxController(1);
 
   double translationPow = Constants.Drivetrain.TranslationPow;
@@ -139,7 +140,7 @@ public class Robot extends TimedRobot {
 
 
   public void driveRobot() {
-    double x = driveController.getLeftX(), y = driveController.getLeftY(), theta = driveController.getRightX();
+    double x = -driveController.getLeftX(), y = -driveController.getLeftY(), theta = driveController.getRightX();
     
     if (Math.hypot(x, y) < Constants.controllerDeadband) {
       x = 0;
@@ -153,7 +154,7 @@ public class Robot extends TimedRobot {
     y = (y > 0) ? Math.abs(Math.pow(y, translationPow)) : -Math.abs(Math.pow(y, translationPow));
     theta = (theta > 0) ? Math.abs(Math.pow(theta, rotationPow)) : -Math.abs(Math.pow(theta, rotationPow));
 
-    double slowModeFactor = (driveController.getLeftTriggerAxis() * 3) + 1;
+    double slowModeFactor = (driveController.getLeftTriggerAxis() * Constants.Drivetrain.SlowFactor) + Constants.Drivetrain.SlowFactorOffset;
 
     DrivetrainSubsystem.getInstance().driveFieldRelative(
       new ChassisSpeeds(
