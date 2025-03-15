@@ -48,11 +48,15 @@ import edu.wpi.first.cameraserver.CameraServer;
 import frc.robot.Subsystems.Intake;
 import frc.robot.IO.RealSparkMaxIO;
 
+import frc.robot.Subsystems.Climber;
+
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
-  private RobotContainer m_robotContainer;                                  
+  private RobotContainer m_robotContainer;     
+  
+  private final Climber climber = new Climber(Constants.Climber.MotorID);
 
   CommandXboxController driveController = new CommandXboxController(0);
   XboxController coDriverController = new XboxController(1);
@@ -113,6 +117,9 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+    driveController.x().whileTrue(climber.climbCommand());
+    driveController.y().whileTrue(climber.releaseCommand());
   }
 
   @Override

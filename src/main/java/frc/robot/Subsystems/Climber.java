@@ -18,21 +18,21 @@ public class Climber extends SubsystemBase {
     public Climber(int driveMotorID) {
         driveMotor = new SparkMax(driveMotorID, MotorType.kBrushless);
         SparkMaxConfig driveConfig = new SparkMaxConfig();
-        driveConfig.smartCurrentLimit(Constants.Climber.currentLimit);
+        driveConfig.smartCurrentLimit(Constants.Climber.CurrentLimit);
         driveConfig.idleMode(IdleMode.kBrake);
         driveMotor.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     public Command climbCommand() {
         return this.startEnd(
-            () -> { driveMotor.set(Constants.Climber.climbSpeed); },
+            () -> { driveMotor.set(Constants.Climber.ClimbSpeed); },
             () -> { driveMotor.stopMotor(); }
         );
     }
 
     public Command releaseCommand() {
         return this.startEnd(
-            () -> { driveMotor.set(Constants.Climber.releaseSpeed); },
+            () -> { driveMotor.set(Constants.Climber.ReleaseSpeed); },
             () -> { driveMotor.stopMotor(); }
         );
     }
@@ -47,7 +47,7 @@ public class Climber extends SubsystemBase {
         builder.setActuator(true);
         builder.setSafeState(this::disable);
         builder.addDoubleProperty("MotorSpeed", () -> driveMotor.get(), null);
-        builder.addBooleanProperty("IsClimbing", () -> driveMotor.get() == Constants.Climber.climbSpeed, null);
-        builder.addBooleanProperty("IsReleasing", () -> driveMotor.get() == Constants.Climber.releaseSpeed, null);
+        builder.addBooleanProperty("IsClimbing", () -> driveMotor.get() == Constants.Climber.ClimbSpeed, null);
+        builder.addBooleanProperty("IsReleasing", () -> driveMotor.get() == Constants.Climber.ReleaseSpeed, null);
     }
 }

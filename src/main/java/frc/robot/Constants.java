@@ -84,13 +84,13 @@ public class Constants {
     }
 
     public interface Climber{
-        public static final int motorId = 0;
+        public static final int MotorID = 20;
         
-        public static final int currentLimit = 40;
+        public static final int CurrentLimit = 40;
 
-        public static final double climbSpeed = 1.0;
-        public static final double releaseSpeed = 1.0;
-        public static final double brakeSpeed = 0.0;
+        public static final double ClimbSpeed = -1.0;
+        public static final double ReleaseSpeed = 1.0;
+        public static final double BrakeSpeed = 0.0;
     }
 
     public interface Motion {
