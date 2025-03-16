@@ -148,7 +148,8 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
 
-    driveController.x().whileTrue(processor.testintake());
+    driveController.x().whileTrue(processor.down());
+    driveController.y().whileTrue(processor.up());
   }
 
   @Override

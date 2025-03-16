@@ -4,9 +4,11 @@ import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -28,7 +30,7 @@ public class Processor extends SubsystemBase {
     private final SparkFlex intakeMotor;
     private  DigitalInput algaeSensor;
     private final SparkAbsoluteEncoder angleEncoder;
-    private final PIDController angController = new PIDController(1.5, 0, 0);
+    private final PIDController angController = new PIDController(3, 0, 0);
     private final SlewRateLimiter angLimiter = new SlewRateLimiter(2);
 
 
@@ -47,9 +49,11 @@ public class Processor extends SubsystemBase {
         angleEncoder = angleMotor.getAbsoluteEncoder();
         currentIntakeState = ProcessorState.STATE_UNKNOWN;
         desiredIntakeState = ProcessorState.STATE_RETRACTED;
+
+        angController.enableContinuousInput(0, 1);
     }
 
-    private void UpdateState(){
+    private void UpdateState() {
         double encoderAngle = angleEncoder.getPosition();
         if (manualIntakeControl && manualMovementSpeed > 0){
             currentIntakeState = ProcessorState.STATE_MOVING;
@@ -77,6 +81,7 @@ public class Processor extends SubsystemBase {
         }
         return Constants.Pconstants.retractedSetPoint;
     }
+
     private void SetDesiredState(ProcessorState newDesiredIntakeState){
         manualIntakeControl = false;
         desiredIntakeState = newDesiredIntakeState;
@@ -88,37 +93,18 @@ public class Processor extends SubsystemBase {
         manualMovementSpeed = speed;
     }
 
-    private void RunLoop(){
-        if (manualIntakeControl){
-            angleMotor.set(manualMovementSpeed);
-        } else {
-            if (currentIntakeState == desiredIntakeState){
-                angleMotor.set(0);
-            } else {
-                angleMotor.set(angLimiter.calculate(angController.calculate(angleEncoder.getPosition())));
-            }
-        }
-        UpdateState();
-    }
-    public ProcessorState Update(
-        boolean raiseButtonPressed, 
-      boolean lowerButtonPressed, double rightTriggerAxis, double leftTriggerAxis,
-      double inSpeed, double shootSpeed){
-        if (raiseButtonPressed){
-            ManualUpdate(intakeRotationSpeed);
-        } else if (lowerButtonPressed){
-            ManualUpdate(-intakeRotationSpeed);
-        } else if (manualIntakeControl){
-            ManualUpdate(0);
-        }
-        RunLoop();
-        if (rightTriggerAxis > 0.5){
-            intakeMotor.set(inSpeed);
-        } else {
-            intakeMotor.set(leftTriggerAxis * 0.5);
-        }
-        return currentIntakeState;
-    }
+    // private void RunLoop(){
+    //     if (manualIntakeControl){
+    //         angleMotor.set(manualMovementSpeed);
+    //     } else {
+    //         if (currentIntakeState == desiredIntakeState){
+    //             angleMotor.set(0);
+    //         } else {
+    //             angleMotor.set(angLimiter.calculate(angController.calculate(angleEncoder.getPosition())));
+    //         }
+    //     }
+    //     UpdateState();
+    // }
 
     public Command extend(){
         return this.run(()-> SetDesiredState(ProcessorState.STATE_EXTENDED));
@@ -149,7 +135,29 @@ public class Processor extends SubsystemBase {
     }
 
     public Command testintake(){
-        return this.run(()-> { intakeMotor.set(0.1); }).until(() -> !algaeSensor.get());
+        return run(()-> { intakeMotor.set(1); })
+            .until(() -> !algaeSensor.get())
+            .finallyDo(() -> { intakeMotor.set(0); });
+    }
+
+    public Command up() {
+        return run(() -> {
+            angController.setSetpoint(1);
+            SmartDashboard.putNumber("setpoint", angController.getSetpoint());
+            var speed = MathUtil.clamp(angLimiter.calculate(angController.calculate(angleEncoder.getPosition())), -1, 1);
+            SmartDashboard.putNumber("speed", speed);
+            angleMotor.set(speed);
+        }).finallyDo(() -> { angleMotor.set(0); }).withName("up");
+    }
+
+    public Command down() {
+        return run(() -> {
+            angController.setSetpoint(0.7);
+            SmartDashboard.putNumber("setpoint", angController.getSetpoint());
+            var speed = MathUtil.clamp(angLimiter.calculate(angController.calculate(angleEncoder.getPosition())), -1, 1);
+            SmartDashboard.putNumber("speed", speed);
+            angleMotor.set(speed);
+        }).finallyDo(() -> { angleMotor.set(0); }).withName("down");
     }
 
 
@@ -176,8 +184,9 @@ public class Processor extends SubsystemBase {
 
     @Override
     public void periodic() {
-        
-        //sensor = algaeSensor.get();
+        SmartDashboard.putBoolean("algae", algaeSensor.get());
+        SmartDashboard.putNumber("algae encoder", angleEncoder.getPosition());
+        SmartDashboard.putString("command", this.getCurrentCommand() != null ? this.getCurrentCommand().getName() : "");
     }
 
     
