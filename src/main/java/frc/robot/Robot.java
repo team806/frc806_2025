@@ -4,34 +4,9 @@
 
 package frc.robot;
 
-import javax.lang.model.util.ElementScanner14;
-
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.SparkFlex;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkAbsoluteEncoder;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.AlternateEncoderConfig;
-
-import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.filter.MedianFilter;
-import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.wpilibj.Compressor;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
-import edu.wpi.first.wpilibj.PneumaticHub;
-import edu.wpi.first.wpilibj.PneumaticsControlModule;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Ultrasonic;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
@@ -42,11 +17,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.PIDCommand;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Subsystems.DrivetrainSubsystem;
-import edu.wpi.first.cameraserver.CameraServer;
-import frc.robot.Subsystems.Intake;
-import frc.robot.IO.RealSparkMaxIO;
+import frc.robot.Subsystems.Processor;
 
 import frc.robot.Subsystems.Climber;
 
@@ -61,6 +34,7 @@ public class Robot extends TimedRobot {
   CommandXboxController driveController = new CommandXboxController(0);
   XboxController coDriverController = new XboxController(1);
 
+  Processor processor;
   double translationPow = Constants.Drivetrain.TranslationPow;
   double rotationPow = Constants.Drivetrain.RotationPow;
   
@@ -76,9 +50,13 @@ public class Robot extends TimedRobot {
 
     CameraServer.startAutomaticCapture();
 
-    SmartDashboard.putNumber("translationPow", translationPow);
-    SmartDashboard.putNumber("rotationPow", rotationPow);
-    // SmartDashboard.putNumber("gyro", DrivetrainSubsystem.getInstance().getGyroscopeRotation())
+    processor = new Processor();
+    
+    // Initialize here to retrieve the details regarding the gyroscope.
+    // Do not use to ensure that any changes to behavior of the subsystem are unobserved and do not
+    // impact the driving and autonomous of the robot.
+    DrivetrainSubsystem.getInstance().resetGyro();
+
 
   }
 
@@ -118,8 +96,7 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
 
-    driveController.x().whileTrue(climber.climbCommand());
-    driveController.y().whileTrue(climber.releaseCommand());
+    
   }
 
   @Override

@@ -1,22 +1,21 @@
 package frc.robot.Subsystems;
 
 import com.ctre.phoenix6.hardware.CANcoder;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.proto.Controller;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -24,6 +23,7 @@ public class swerveModule extends SubsystemBase{
 
     //drive 
     SparkMax driveMotor;
+    int driveMotorID;
     SparkAbsoluteEncoder driveMotorEncoder;
     SparkClosedLoopController  driveController;
     //steer
@@ -44,6 +44,7 @@ public class swerveModule extends SubsystemBase{
 
     //CONSTRUCTOR//
         public swerveModule(int driveMotorID, int steerMotorID, int encoderID, Double encoderOffsetRotations){
+            this.driveMotorID = driveMotorID;
 
             //drive motor 
             driveMotor = new SparkMax(driveMotorID, MotorType.kBrushless);
@@ -74,6 +75,7 @@ public class swerveModule extends SubsystemBase{
             steerController.enableContinuousInput(0, 1);
 
         }
+
     //DRIVE//
         public void setTargetState(SwerveModuleState targetState) {
             //PID experement
@@ -87,6 +89,10 @@ public class swerveModule extends SubsystemBase{
             driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS); 
         }
     //FEEDBACK//
+        public void periodic() {
+            SmartDashboard.putNumber("S" + driveMotorID, getModuleAngRotations());
+        }
+
         public double getModuleAngRotations(){
             return moduleEncoder.getAbsolutePosition().getValueAsDouble() - encoderOffsetRotations;
         }

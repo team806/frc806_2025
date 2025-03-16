@@ -1,7 +1,5 @@
 package frc.robot;
 
-import org.opencv.core.Mat;
-
 import edu.wpi.first.math.geometry.Translation2d;
 
 public class Constants {
@@ -30,33 +28,24 @@ public class Constants {
             public static final double SteerKP = 1.5, SteerKI = 0, SteerKD = 0;
         
             public static final int FrontLeftDriveID   = 4, FrontLeftSteerID   = 5, FrontLeftEncoderID = 6;
-			public static final double FrontLeftEncoderOffset = 0.040283;//-0.423340 rotations raw = 0.000000 rotations
+			public static final double FrontLeftEncoderOffset = -0.456;//-0.423340 rotations raw = 0.000000 rotations
 
             public static final int FrontRightDriveID   = 1, FrontRightSteerID   = 2, FrontRightEncoderID = 3;
-            public static final double FrontRightEncoderOffset = 0.152100;//0.484131 rotations raw = -0.000244 rotations
+            public static final double FrontRightEncoderOffset = -0.347;//0.484131 rotations raw = -0.000244 rotations
 
             public static final int RearLeftDriveID   = 7, RearLeftSteerID   = 8, RearLeftEncoderID = 9;
-            public static final double RearLeftEncoderOffset = -0.112061;//0.283691 rotations raw = -0.000244 rotations
+            public static final double RearLeftEncoderOffset = 0.386;//0.283691 rotations raw = -0.000244 rotations
 
             public static final int RearRightDriveID   = 10, RearRightSteerID   = 11, RearRightEncoderID = 12;
-            public static final double RearRightEncoderOffset = -0.362549;//0.448730 rotations raw = 0.000244 rotations
+            public static final double RearRightEncoderOffset = 0.131;//0.448730 rotations raw = 0.000244 rotations
         
     }
-
-    public interface Drivetrain {
-        public static final double TranslationPow = 3;
-        public static final double RotationPow = 3;
-        
-        public static final double SlowFactor = 3;
-        public static final double SlowFactorOffset = 1;
-    }
-
-    public interface Intake{
+                //TODO not really a todo, but i had to name it this way or java got mad at me
+    public interface Pconstants{ //TODO figure out the real values for this section 
 
         public static final double IntakeSpeed = 0;
-        public static final double SpeakerSpeed = 0;
-        public static final double AmpSpeed = 0;
-
+        public static final double ShootSpeed = 0;
+        
 
         public static final int AngMotorID = 16, ShootMotorID = 15, PingChannel = 0, EchoChannel = 1;
 
@@ -73,7 +62,18 @@ public class Constants {
         public static final double retractedSetPoint = 0.01318359375;
         public static final double ampSetPoint = -0.5;
         public static final double extendedSetPoint = -1.103515625;
+        public static int angID = 13;
+        public static int intakeID = 14;
+        public static int algaeSensorPort = 0;
 
+    }
+
+    public interface Drivetrain {
+        public static final double TranslationPow = 3;
+        public static final double RotationPow = 3;
+
+        public static final double SlowFactor = 3;
+        public static final double SlowFactorOffset = 1;
     }
 
     public interface Shooter{
