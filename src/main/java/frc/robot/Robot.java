@@ -8,20 +8,15 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
-import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim.KitbotGearing;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Subsystems.DrivetrainSubsystem;
-import frc.robot.Subsystems.Processor;
-
 import frc.robot.Subsystems.Climber;
+import frc.robot.Subsystems.DrivetrainSubsystem;
+import frc.robot.Subsystems.Elevator;
+import frc.robot.Subsystems.Processor;
 
 
 public class Robot extends TimedRobot {
@@ -30,6 +25,7 @@ public class Robot extends TimedRobot {
   private RobotContainer m_robotContainer;     
   
   private final Climber climber = new Climber(Constants.Climber.MotorID);
+  private final Elevator elevator = new Elevator(Constants.Elevator.Lift.MotorID);
 
   CommandXboxController driveController = new CommandXboxController(0);
   XboxController coDriverController = new XboxController(1);
@@ -124,7 +120,7 @@ public class Robot extends TimedRobot {
 
 
   public void driveRobot() {
-    double x = -driveController.getLeftX(), y = -driveController.getLeftY(), theta = driveController.getRightX();
+    double x = driveController.getLeftX(), y = driveController.getLeftY(), theta = driveController.getRightX();
     
     if (Math.hypot(x, y) < Constants.controllerDeadband) {
       x = 0;

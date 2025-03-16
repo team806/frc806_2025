@@ -93,6 +93,12 @@ public class Constants {
         public static final double BrakeSpeed = 0.0;
     }
 
+    public interface Elevator {
+        public interface Lift {
+            public static final int MotorID = 15;
+        }
+    }
+
     public interface Motion {
             public static final double translationKP = 0.02, translationKI = 0, translationKD = 0;
             public static final double rotationKP = 0.02, rotationKI = 0, rotationKD = 0;

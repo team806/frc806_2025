@@ -1,24 +1,15 @@
+package frc.robot.Subsystems;
 
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
 
-// package frc.robot.Subsystems;
-
-// import edu.wpi.first.units.Units.*;
-
-// import edu.wpi.first.units.measure.Distance;
-// import edu.wpi.first.wpilibj.Alert;
-// import edu.wpi.first.wpilibj.Alert.AlertType;
-// import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-// import edu.wpi.first.wpilibj2.command.Command;
-// import edu.wpi.first.wpilibj2.command.Commands;
-// import edu.wpi.first.wpilibj2.command.SelectCommand;
-// import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-// import java.lang.System.Logger;
-// import java.util.Map;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 
 
-// public class Elevator extends SubsystemBase {
+public class Elevator extends SubsystemBase {
 //   // Hardware interface and inputs
 //   private final Elevator io;
 //   private final ElevatorIOInputsAutoLogged inputs;
@@ -31,17 +22,17 @@
 //       new Alert("Elevator leader motor isn't connected", AlertType.kError);
 //   private final Alert followerMotorAlert =
 //       new Alert("Elevator follower motor isn't connected", AlertType.kError);
+    private final SparkMax liftMotor;
+    private final RelativeEncoder liftEncoder;
 
-//   /**
-//    * Creates a new Elevator subsystem with the specified hardware interface.
-//    *
-//    * @param io The hardware interface implementation for the arm
-//    */
-//   public Elevator(Elevator io) {
-//     this.io = io;
-//     this.inputs = new ElevatorIOInputsAutoLogged();
-//     SmartDashboard.putData(this);
-//   }
+    public Elevator(int liftMotorId) {
+        liftMotor = new SparkMax(liftMotorId, MotorType.kBrushless);
+        liftEncoder = liftMotor.getEncoder();
+    }
+
+    public void periodic() {
+        SmartDashboard.putNumber("elevator lift", liftEncoder.getPosition());
+    }
 
 //   @Override
 //   public void periodic() {
@@ -260,4 +251,4 @@
 //   public final Command stopCommand() {
 //     return setPositionCommand(ElevatorPosition.STOP);
 //   }
-// }
+}
