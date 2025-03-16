@@ -1,30 +1,18 @@
 package frc.robot.Subsystems;
 
-import com.ctre.phoenix6.hardware.CANcoder;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.AlternateEncoderConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.RelativeEncoder;
-
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
-import edu.wpi.first.math.filter.SlewRateLimiter;
-import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Utils;
-import frc.robot.Constants.Pconstants;
-import frc.robot.IO.SparkMaxIO;
+
 
 enum ProcessorState { 
     STATE_UNKNOWN,
@@ -36,9 +24,10 @@ enum ProcessorState {
 
 
 public class Processor extends SubsystemBase {
-    private final SparkMaxIO angleMotorIo;
-    private final SparkMaxIO intakeMotorIo;
-    private final DigitalInput algaeSensor;
+    private final SparkFlex angleMotor;
+    private final SparkFlex intakeMotor;
+    private  DigitalInput algaeSensor;
+    private final SparkAbsoluteEncoder angleEncoder;
     private final PIDController angController = new PIDController(1.5, 0, 0);
     private final SlewRateLimiter angLimiter = new SlewRateLimiter(2);
 
@@ -50,16 +39,18 @@ public class Processor extends SubsystemBase {
     private double manualMovementSpeed = 0.0;
     private ProcessorState currentIntakeState;
     private ProcessorState desiredIntakeState;
-    public Processor(SparkMaxIO angleMotorIo, SparkMaxIO intakeMotorIo, int algaeSensorPort) {
-        this.angleMotorIo = angleMotorIo;
-        this.intakeMotorIo = intakeMotorIo;
-        algaeSensor = new DigitalInput(algaeSensorPort);
+    public Processor() {
+        angleMotor = new SparkFlex(Constants.Pconstants.angID, MotorType.kBrushless);
+        intakeMotor = new SparkFlex(Constants.Pconstants.intakeID, MotorType.kBrushless);
+        algaeSensor = new DigitalInput(0);
+            
+        angleEncoder = angleMotor.getAbsoluteEncoder();
         currentIntakeState = ProcessorState.STATE_UNKNOWN;
         desiredIntakeState = ProcessorState.STATE_RETRACTED;
     }
 
     private void UpdateState(){
-        double encoderAngle = angleMotorIo.getPosition();
+        double encoderAngle = angleEncoder.getPosition();
         if (manualIntakeControl && manualMovementSpeed > 0){
             currentIntakeState = ProcessorState.STATE_MOVING;
             return;
@@ -99,12 +90,12 @@ public class Processor extends SubsystemBase {
 
     private void RunLoop(){
         if (manualIntakeControl){
-            angleMotorIo.setSpeed(manualMovementSpeed);
+            angleMotor.set(manualMovementSpeed);
         } else {
             if (currentIntakeState == desiredIntakeState){
-                angleMotorIo.setSpeed(0);
+                angleMotor.set(0);
             } else {
-                angleMotorIo.setSpeed(angLimiter.calculate(angController.calculate(angleMotorIo.getPosition())));
+                angleMotor.set(angLimiter.calculate(angController.calculate(angleEncoder.getPosition())));
             }
         }
         UpdateState();
@@ -122,9 +113,9 @@ public class Processor extends SubsystemBase {
         }
         RunLoop();
         if (rightTriggerAxis > 0.5){
-            intakeMotorIo.setSpeed(inSpeed);
+            intakeMotor.set(inSpeed);
         } else {
-            intakeMotorIo.setSpeed(leftTriggerAxis * 0.5);
+            intakeMotor.set(leftTriggerAxis * 0.5);
         }
         return currentIntakeState;
     }
@@ -146,15 +137,19 @@ public class Processor extends SubsystemBase {
     }
 
     public Command intake(){
-        return this.run(()-> intakeMotorIo.setSpeed(0.5));
+        return run(()-> intakeMotor.set(0.5));
     }
 
     public Command shoot(){
-        return this.run(()-> intakeMotorIo.setSpeed(-1));
+        return this.run(()-> intakeMotor.set(-1));
     }
 
     public Command hold(){
-        return this.run(()-> intakeMotorIo.setSpeed(0.1));
+        return this.run(()-> intakeMotor.set(0.1));
+    }
+
+    public Command testintake(){
+        return this.run(()-> { intakeMotor.set(0.1); }).until(() -> !algaeSensor.get());
     }
 
 
@@ -177,6 +172,12 @@ public class Processor extends SubsystemBase {
                         store()
                     ));
              
+    }
+
+    @Override
+    public void periodic() {
+        
+        //sensor = algaeSensor.get();
     }
 
     
