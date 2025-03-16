@@ -58,7 +58,7 @@ public class swerveModule extends SubsystemBase{
             //steer motor
             steerMotor = new SparkMax(steerMotorID, MotorType.kBrushless);
             SparkMaxConfig steerConfig = new SparkMaxConfig();
-            steerConfig.idleMode(IdleMode.kCoast);
+            steerConfig.idleMode(IdleMode.kBrake);
             steerConfig.smartCurrentLimit(20);
             steerMotor.configure(steerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
             // module encoder
@@ -83,7 +83,9 @@ public class swerveModule extends SubsystemBase{
             //  driveController.setReference(targetState.speedMetersPerSecond / DRIVE_VELOCITY_CONVERSION, ControlType.kVelocity);
 
             // FUNCTIONING
-            steerMotor.set(-steerController.calculate(getModuleAngRotations(),targetState.angle.getRotations()));
+            double currentAngle = getModuleAngRotations();
+            steerMotor.set(-steerController.calculate(currentAngle, targetState.angle.getRotations()));
+            targetState.speedMetersPerSecond *= targetState.angle.minus(new Rotation2d(currentAngle*2*Math.PI)).getCos();
             driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS); 
         }
     //FEEDBACK//

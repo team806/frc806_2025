@@ -68,6 +68,14 @@ public class Constants {
 
     }
 
+    public interface Drivetrain {
+        public static final double TranslationPow = 3;
+        public static final double RotationPow = 3;
+
+        public static final double SlowFactor = 3;
+        public static final double SlowFactorOffset = 1;
+    }
+
     public interface Shooter{
 
         public static final int aID = 13,bID = 14;
@@ -76,10 +84,15 @@ public class Constants {
     }
 
     public interface Climber{
+        public static final int MotorID = 20;
+        
+        public static final int CurrentLimit = 80;
 
-        public static final double minPressure = 60, maxPressure = 120;
-
+        public static final double ClimbSpeed = -1.0;
+        public static final double ReleaseSpeed = 1.0;
+        public static final double BrakeSpeed = 0.0;
     }
+
     public interface Motion {
             public static final double translationKP = 0.02, translationKI = 0, translationKD = 0;
             public static final double rotationKP = 0.02, rotationKI = 0, rotationKD = 0;
