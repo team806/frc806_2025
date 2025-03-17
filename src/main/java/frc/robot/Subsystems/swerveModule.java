@@ -17,6 +17,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Configs;
 import frc.robot.Constants;
 
 public class swerveModule extends SubsystemBase{
@@ -48,19 +49,13 @@ public class swerveModule extends SubsystemBase{
 
             //drive motor 
             driveMotor = new SparkMax(driveMotorID, MotorType.kBrushless);
-            SparkMaxConfig driveConfig = new SparkMaxConfig();
-            driveConfig.smartCurrentLimit(40);
-            driveConfig.idleMode(IdleMode.kBrake);
-            driveMotor.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+                driveMotor.configure(Configs.Drive.driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
             //drive encoder
             driveMotorEncoder = driveMotor.getAbsoluteEncoder();
             //steer motor
             steerMotor = new SparkMax(steerMotorID, MotorType.kBrushless);
-            SparkMaxConfig steerConfig = new SparkMaxConfig();
-            steerConfig.idleMode(IdleMode.kBrake);
-            steerConfig.smartCurrentLimit(20);
-            steerMotor.configure(steerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+                steerMotor.configure(Configs.Drive.steerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
             // module encoder
             moduleEncoder = new CANcoder(encoderID,"Default Name");
             this.encoderOffsetRotations = encoderOffsetRotations;
