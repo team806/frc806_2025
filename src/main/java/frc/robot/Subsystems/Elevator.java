@@ -3,9 +3,13 @@ package frc.robot.Subsystems;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Configs;
+import frc.robot.Constants;
 
 
 
@@ -23,10 +27,15 @@ public class Elevator extends SubsystemBase {
 //   private final Alert followerMotorAlert =
 //       new Alert("Elevator follower motor isn't connected", AlertType.kError);
     private final SparkMax liftMotor;
+    private final SparkMax followerMotor;
     private final RelativeEncoder liftEncoder;
-
-    public Elevator(int liftMotorId) {
-        liftMotor = new SparkMax(liftMotorId, MotorType.kBrushless);
+    
+    
+        public Elevator() {
+            liftMotor = new SparkMax(Constants.Elevator.leaderID, MotorType.kBrushless);
+                liftMotor.configure(Configs.elevator.leaderConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+            followerMotor = new SparkMax(Constants.Elevator.followerID, MotorType.kBrushless);
+                followerMotor.configure(Configs.elevator.followerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         liftEncoder = liftMotor.getEncoder();
     }
 

@@ -21,7 +21,8 @@ public class Constants {
 
     public static final int PigeonID = 0;   
 
-    public static double controllerDeadband = 0.15; 
+    public static double controllerDeadband = 0.15;
+
 
     public interface Modules{
             public static final double SpeedKP = 0.001, SpeedKI = 0, SpeedKD = 0.0005;
@@ -41,13 +42,10 @@ public class Constants {
         
     }
                 //TODO not really a todo, but i had to name it this way or java got mad at me
-    public interface Pconstants{ //TODO figure out the real values for this section 
+    public interface Pconstants{ //TODO figure out the real values for this section
 
         public static final double IntakeSpeed = 0;
         public static final double ShootSpeed = 0;
-        
-
-        public static final int AngMotorID = 16, ShootMotorID = 15, PingChannel = 0, EchoChannel = 1;
 
         public static final double ControllerTolerance = 1;//degrees 
         public static final double ControllerKP = 0.02, ControllerKI = 0, ControllerKD = 0;
@@ -62,6 +60,9 @@ public class Constants {
         public static final double retractedSetPoint = 0.01318359375;
         public static final double ampSetPoint = -0.5;
         public static final double extendedSetPoint = -1.103515625;
+        public static final double velocityConversionFactor = 0;
+        public static final int angCurrentLimit = 0;
+        public static final int intakeCurrentLimit = 0;
         public static int angID = 13;
         public static int intakeID = 14;
         public static int algaeSensorPort = 0;
@@ -74,13 +75,9 @@ public class Constants {
 
         public static final double SlowFactor = 3;
         public static final double SlowFactorOffset = 1;
-    }
-
-    public interface Shooter{
-
-        public static final int aID = 13,bID = 14;
-		public static final double MaxSpeed = 1.00;//percent
         
+        public static final int driveCurrentLimit = 40;
+        public static final int steerCurrentLimit = 20;
     }
 
     public interface Climber{
@@ -94,9 +91,19 @@ public class Constants {
     }
 
     public interface Elevator {
-        public interface Lift {
-            public static final int MotorID = 15;
-        }
+        public static final int leaderID = 15;
+        public static final int followerID = 16;
+
+        public static final int CurrentLimit = 40;
+    }
+    public interface Arm{
+        public static final int pivotID = 17;
+        public static final int wheelID = 18;
+        public static final int sensorPort = 1;
+
+        public static final int pivotCurrentLimit = 40;
+        public static final int wheelCurrentLimit = 40;
+
     }
 
     public interface Motion {

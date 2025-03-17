@@ -1,7 +1,10 @@
 package frc.robot.Subsystems;
 
 import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.math.MathUtil;
@@ -12,6 +15,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Configs;
 import frc.robot.Constants;
 import frc.robot.Utils;
 
@@ -27,6 +31,7 @@ enum ProcessorState {
 
 public class Processor extends SubsystemBase {
     private final SparkFlex angleMotor;
+        private final SparkClosedLoopController angCLC;
     private final SparkFlex intakeMotor;
     private  DigitalInput algaeSensor;
     private final SparkAbsoluteEncoder angleEncoder;
@@ -43,8 +48,11 @@ public class Processor extends SubsystemBase {
     private ProcessorState desiredIntakeState;
     public Processor() {
         angleMotor = new SparkFlex(Constants.Pconstants.angID, MotorType.kBrushless);
+            angleMotor.configure(Configs.intake.angConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+            angCLC = angleMotor.getClosedLoopController();
         intakeMotor = new SparkFlex(Constants.Pconstants.intakeID, MotorType.kBrushless);
-        algaeSensor = new DigitalInput(0);
+            intakeMotor.configure(Configs.intake.intakeConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        algaeSensor = new DigitalInput(Constants.Pconstants.algaeSensorPort);
             
         angleEncoder = angleMotor.getAbsoluteEncoder();
         currentIntakeState = ProcessorState.STATE_UNKNOWN;
