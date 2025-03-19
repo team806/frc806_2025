@@ -1,5 +1,8 @@
 package frc.robot.Subsystems;
 
+import static edu.wpi.first.wpilibj2.command.Commands.parallel;
+import static edu.wpi.first.wpilibj2.command.Commands.race;
+
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -8,22 +11,12 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import static edu.wpi.first.wpilibj2.command.Commands.either;
+import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
+import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Utils;
-
-
-enum ProcessorState { 
-    STATE_UNKNOWN,
-    STATE_RETRACTED,
-    STATE_AMP,
-    STATE_EXTENDED,
-    STATE_MOVING, STATE_TRANSPORT
-}
-
 
 public class Processor extends SubsystemBase {
     private final SparkFlex angleMotor;
@@ -33,161 +26,60 @@ public class Processor extends SubsystemBase {
     private final PIDController angController = new PIDController(3, 0, 0);
     private final SlewRateLimiter angLimiter = new SlewRateLimiter(2);
 
-
-
-
-    private boolean manualIntakeControl = false;
-    private final double intakeRotationSpeed = 0.2;
-    private double manualMovementSpeed = 0.0;
-    private ProcessorState currentIntakeState;
-    private ProcessorState desiredIntakeState;
     public Processor() {
         angleMotor = new SparkFlex(Constants.Pconstants.angID, MotorType.kBrushless);
+        angleEncoder = angleMotor.getAbsoluteEncoder();
         intakeMotor = new SparkFlex(Constants.Pconstants.intakeID, MotorType.kBrushless);
         algaeSensor = new DigitalInput(0);
-            
-        angleEncoder = angleMotor.getAbsoluteEncoder();
-        currentIntakeState = ProcessorState.STATE_UNKNOWN;
-        desiredIntakeState = ProcessorState.STATE_RETRACTED;
 
         angController.enableContinuousInput(0, 1);
+
+        setDefaultCommand(idle());
     }
 
-    private void UpdateState() {
-        double encoderAngle = angleEncoder.getPosition();
-        if (manualIntakeControl && manualMovementSpeed > 0){
-            currentIntakeState = ProcessorState.STATE_MOVING;
-            return;
-        }
-
-        if (Utils.IsDoubleApproximately(encoderAngle, Constants.Pconstants.retractedSetPoint, Constants.Delta)){
-            currentIntakeState = ProcessorState.STATE_RETRACTED;
-        } else if (Utils.IsDoubleApproximately(encoderAngle, Constants.Pconstants.ampSetPoint, 0.3)){
-            currentIntakeState = ProcessorState.STATE_AMP;
-        } else if (Utils.IsDoubleApproximately(encoderAngle, Constants.Pconstants.extendedSetPoint, Constants.Delta)){
-            currentIntakeState = ProcessorState.STATE_EXTENDED;
-        } else {
-            currentIntakeState = ProcessorState.STATE_MOVING;
-        }
+    public void driveAngleTo(double setpoint) {
+        angleMotor.set(MathUtil.clamp(angLimiter.calculate(angController.calculate(angleEncoder.getPosition(), setpoint)), -1, 1));
     }
 
-    private double GetDesiredPosition(ProcessorState intakeState){
-        if (intakeState == ProcessorState.STATE_RETRACTED){
-            return Constants.Pconstants.retractedSetPoint;
-        } else if (intakeState == ProcessorState.STATE_AMP){
-            return Constants.Pconstants.ampSetPoint;
-        } else if (intakeState == ProcessorState.STATE_EXTENDED){
-            return Constants.Pconstants.extendedSetPoint;
-        }
-        return Constants.Pconstants.retractedSetPoint;
+    public Command idle() {
+        return parallel(
+            runOnce(() -> { intakeMotor.set(0); }),
+            run(() -> { driveAngleTo(Constants.AlgaeProcessor.IdlePosition); })
+        )
+        .withName("idle");
     }
 
-    private void SetDesiredState(ProcessorState newDesiredIntakeState){
-        manualIntakeControl = false;
-        desiredIntakeState = newDesiredIntakeState;
-        angController.setSetpoint(GetDesiredPosition(desiredIntakeState));
+    public Command intakeAndHold() {
+        return parallel(
+            runOnce(() -> { intakeMotor.set(1); }),
+            run(() -> { driveAngleTo(Constants.AlgaeProcessor.IntakePosition); })
+        ).until(() -> angController.atSetpoint()).withName("Preparing to intake")
+        .andThen(
+            race(
+                waitSeconds(Constants.AlgaeProcessor.IntakeTimeout),
+                waitUntil(() -> !algaeSensor.get())
+            )
+        ).withName("Intake")
+        .andThen(
+            either(
+                runOnce(() -> { intakeMotor.set(0); }).withName("Failed to intake"),
+                waitSeconds(Constants.AlgaeProcessor.InakeExtraHoldTime)
+                    .andThen(parallel(
+                        runOnce(() -> { intakeMotor.set(Constants.AlgaeProcessor.HoldSpeed); }),
+                        run(() -> { driveAngleTo(Constants.AlgaeProcessor.HoldPosiiton); })
+                    )).withName("Holding algae"),
+                algaeSensor::get
+            )
+        );
     }
 
-    private void ManualUpdate(double speed){
-        manualIntakeControl = true;
-        manualMovementSpeed = speed;
+    public Command prepareToShoot() {
+        return run(() -> { driveAngleTo(Constants.AlgaeProcessor.ShootPosition); }).withName("Preparing to shoot");
     }
 
-    // private void RunLoop(){
-    //     if (manualIntakeControl){
-    //         angleMotor.set(manualMovementSpeed);
-    //     } else {
-    //         if (currentIntakeState == desiredIntakeState){
-    //             angleMotor.set(0);
-    //         } else {
-    //             angleMotor.set(angLimiter.calculate(angController.calculate(angleEncoder.getPosition())));
-    //         }
-    //     }
-    //     UpdateState();
-    // }
-
-    public Command extend(){
-        return this.run(()-> SetDesiredState(ProcessorState.STATE_EXTENDED));
-    }
-
-    public Command transport(){
-        return this.run(()-> SetDesiredState(ProcessorState.STATE_TRANSPORT));
-    }
-
-    public Command store(){
-        return this.run(()-> SetDesiredState(ProcessorState.STATE_RETRACTED));
-    }
-
-    public Command score(){
-        return this.run(()-> SetDesiredState(ProcessorState.STATE_AMP));
-    }
-
-    public Command intake(){
-        return run(()-> intakeMotor.set(0.5));
-    }
-
-    public Command shoot(){
-        return this.run(()-> intakeMotor.set(-1));
-    }
-
-    public Command hold(){
-        return this.run(()-> intakeMotor.set(0.1));
-    }
-
-    public Command testintake(){
-        return run(()-> { intakeMotor.set(1); })
-            .until(() -> !algaeSensor.get())
-            .finallyDo(() -> { intakeMotor.set(0); });
-    }
-
-    public Command up() {
-        return run(() -> {
-            angController.setSetpoint(1);
-            SmartDashboard.putNumber("setpoint", angController.getSetpoint());
-            var speed = MathUtil.clamp(angLimiter.calculate(angController.calculate(angleEncoder.getPosition())), -1, 1);
-            SmartDashboard.putNumber("speed", speed);
-            angleMotor.set(speed);
-        }).finallyDo(() -> { angleMotor.set(0); }).withName("up");
-    }
-
-    public Command down() {
-        return run(() -> {
-            angController.setSetpoint(0.7);
-            SmartDashboard.putNumber("setpoint", angController.getSetpoint());
-            var speed = MathUtil.clamp(angLimiter.calculate(angController.calculate(angleEncoder.getPosition())), -1, 1);
-            SmartDashboard.putNumber("speed", speed);
-            angleMotor.set(speed);
-        }).finallyDo(() -> { angleMotor.set(0); }).withName("down");
-    }
-
-
-    public Command autointake(){
-        return this.startRun(
-            ()->SetDesiredState(ProcessorState.STATE_EXTENDED),
-                 ()-> intake().until(algaeSensor::get)
-                 .andThen(
-                    Commands.parallel(
-                        transport(),
-                            hold()
-                    )));
-    }
-
-    public Command autoshoot(){
-        return this.startRun(
-            ()->SetDesiredState(ProcessorState.STATE_AMP),
-                ()->shoot()
-                    .andThen(
-                        store()
-                    ));
-             
-    }
-
-    @Override
-    public void periodic() {
-        SmartDashboard.putBoolean("algae", algaeSensor.get());
-        SmartDashboard.putNumber("algae encoder", angleEncoder.getPosition());
-        SmartDashboard.putString("command", this.getCurrentCommand() != null ? this.getCurrentCommand().getName() : "");
-    }
-
-    
+    public Command shoot() {
+        return runOnce(() -> { intakeMotor.set(Constants.AlgaeProcessor.ShootSpeed); })
+            .andThen(waitSeconds(Constants.AlgaeProcessor.ShootTime))
+            .andThen(() -> { intakeMotor.set(0); }).withName("Shooting");
+    }    
 }

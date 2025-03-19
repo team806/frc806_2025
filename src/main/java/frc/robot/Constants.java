@@ -76,14 +76,7 @@ public class Constants {
         public static final double SlowFactorOffset = 1;
     }
 
-    public interface Shooter{
-
-        public static final int aID = 13,bID = 14;
-		public static final double MaxSpeed = 1.00;//percent
-        
-    }
-
-    public interface Climber{
+    public interface Climber {
         public static final int MotorID = 20;
         
         public static final int CurrentLimit = 80;
@@ -91,6 +84,21 @@ public class Constants {
         public static final double ClimbSpeed = -1.0;
         public static final double ReleaseSpeed = 1.0;
         public static final double BrakeSpeed = 0.0;
+    }
+
+    public interface AlgaeProcessor {
+        public static final double IntakeSpeed = 1;
+        public static final double HoldSpeed = 0.1;
+        public static final double ShootSpeed = -1;
+
+        public static final double IdlePosition = 1;
+        public static final double IntakePosition = 0.75;
+        public static final double HoldPosiiton = 0.9;
+        public static final double ShootPosition = 0.95;
+
+        public static final double IntakeTimeout = 3;
+        public static final double InakeExtraHoldTime = 0.1;
+        public static final double ShootTime = 3;
     }
 
     public interface Elevator {
