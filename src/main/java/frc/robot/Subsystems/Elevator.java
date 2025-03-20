@@ -1,254 +1,135 @@
 package frc.robot.Subsystems;
 
+import static edu.wpi.first.wpilibj2.command.Commands.parallel;
+
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-
+import frc.robot.Constants;
 
 public class Elevator extends SubsystemBase {
-//   // Hardware interface and inputs
-//   private final Elevator io;
-//   private final ElevatorIOInputsAutoLogged inputs;
+    private final PIDController fastLiftController = new PIDController(Constants.Elevator.Lift.kFastP, Constants.Elevator.Lift.kFastI, Constants.Elevator.Lift.kFastD);
+    private final PIDController slowLiftController = new PIDController(Constants.Elevator.Lift.kSlowP, Constants.Elevator.Lift.kSlowI, Constants.Elevator.Lift.kSlowD);
+    private final PIDController armController = new PIDController(Constants.Elevator.Arm.kP, Constants.Elevator.Arm.kI, Constants.Elevator.Arm.kD);
 
-//   // Current arm distance mode
-//   private ElevatorPosition currentMode = ElevatorPosition.INTAKE;
-
-//   // Alerts for motor connection status
-//   private final Alert leaderMotorAlert =
-//       new Alert("Elevator leader motor isn't connected", AlertType.kError);
-//   private final Alert followerMotorAlert =
-//       new Alert("Elevator follower motor isn't connected", AlertType.kError);
     private final SparkMax liftMotor;
     private final RelativeEncoder liftEncoder;
+    private final SparkMax armMotor;
+    private final CANcoder armEncoder;
+    private final SparkMax intakeMotor;
+    private final DigitalInput coralSensor;
+    
+    private final SlewRateLimiter liftLimiter = new SlewRateLimiter(2);
+    private final SlewRateLimiter angLimiter = new SlewRateLimiter(2);
 
-    public Elevator(int liftMotorId) {
+    public Elevator(int liftMotorId, int armMotorId, int armEncoderId, int intakeMotorId, int coralSensorId) {
         liftMotor = new SparkMax(liftMotorId, MotorType.kBrushless);
         liftEncoder = liftMotor.getEncoder();
+
+        armMotor = new SparkMax(armMotorId, MotorType.kBrushless);
+        armEncoder = new CANcoder(armEncoderId, "Default Name");
+
+        intakeMotor = new SparkMax(intakeMotorId, MotorType.kBrushless);
+
+        coralSensor = new DigitalInput(coralSensorId);
     }
 
-    public void periodic() {
-        SmartDashboard.putNumber("elevator lift", liftEncoder.getPosition());
+    private void liftToQuickly(double setpoint) {
+        armMotor.set(MathUtil.clamp(angLimiter.calculate(fastLiftController.calculate(armEncoder.getAbsolutePosition().getValueAsDouble(), setpoint)), -1, 1));
     }
 
-//   @Override
-//   public void periodic() {
-//     // Update and log inputs from hardware
-//     io.updateInputs(inputs);
-//         Logger.processInputs("Elevator", inputs);
-    
-//         // Update motor connection status alerts
-//         leaderMotorAlert.set(!inputs.leaderConnected);
-//         followerMotorAlert.set(!inputs.followerConnected);
-//       }
-    
-//       private void updateInputs(ElevatorIOInputsAutoLogged inputs2) {
-//         // TODO Auto-generated method stub
-//         throw new UnsupportedOperationException("Unimplemented method 'updateInputs'");
-//       }
-    
-//       /**
-//    * Runs the arm in closed-loop distance mode to the specified angle.
-//    *
-//    * @param distance The target angle distance
-//    */
-//   private void setDistance(Distance distance) {
-//     io.setDistance(distance);
-//   }
+    private void liftToSlowly(double setpoint) {
+        armMotor.set(MathUtil.clamp(angLimiter.calculate(slowLiftController.calculate(armEncoder.getAbsolutePosition().getValueAsDouble(), setpoint)), -1, 1));
+    }
 
-//   public void setManual(double power) {
-//     io.setManual(power);
-//   }
+    private void driveAngleTo(double setpoint) {
+        armMotor.set(MathUtil.clamp(angLimiter.calculate(armController.calculate(armEncoder.getAbsolutePosition().getValueAsDouble(), setpoint)), -1, 1));
+    }
 
-//   public void stopHere() {
-//     io.stopHere();
-//   }
+    public Command idle() {
+        return parallel(
+            runOnce(() -> { intakeMotor.set(0);}),
+            run(() -> { driveAngleTo(Constants.Elevator.Arm.IdlePosition); }),
+            run(() -> { liftToSlowly(Constants.Elevator.Lift.IdlePosition); })
+        ).withName("Idle");
+    }
 
-//   /** Stops the arm motors. */
-//   private void stop() {
-//     io.stop();
-//   }
+    public Command intakeAndHold() {
+        return parallel(
+            runOnce(() -> { intakeMotor.set(Constants.Elevator.Intake.IntakeSpeed); }),
+            run(() -> { liftToQuickly(Constants.Elevator.Lift.IntakePosition); }),
+            run(() -> { driveAngleTo(Constants.Elevator.Arm.IntakePosition); })
+        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint()).withName("Preparing to intake")
+        .andThen(
+            race(
+                waitSeconds(Constants.Elevator.IntakeTimeout),
+                waitUntil(() -> !coralSensor.get())
+            )
+        ).withName("Intake")
+        .andThen(
+            either(
+                none().withName("Failed to intake"),
+                runOnce(() -> { intakeMotor.set(Constants.Elevator.Intake.HoldSpeed); }).withName("Holding coral"),
+                coralSensor::get
+            )
+        );
+        
+        // Drive lift to coral station height, drive arm to coral station angle
+        // Rotate instake
+        // Wait for timeout or coral sensor
+        // Timeout, stop intake and leave
+        // Hit, stop intake
+    }
 
-//   /**
-//    * Returns the current distance of the arm.
-//    *
-//    * @return The current angular distance
-//    */
-//   @AutoLogOutput
-//   public Distance getPosition() {
-//     return inputs.elevatorDistance;
-//   }
+    public Command gotoL1() {
+        return parallel(
+            run(() -> { liftToQuickly(Constants.Elevator.Lift.L1PrepPosition); }),
+            run(() -> { driveAngleTo(Constants.Elevator.Arm.L1PrepPosition); })
+        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint()).withName("Going to L1");
+    }
 
-//   /** Enumeration of available arm distances with their corresponding target angles. */
-//   private enum ElevatorPosition {
-//     STOP(Inches.of(0)), // Stop the arm
-//     INTAKE(Inches.of(0), Inches.of(.5)), // Elevator tucked in
-//     L1(Inches.of(12), Inches.of(.5)), // Position for scoring in L1
-//     L2(Inches.of(15.75), Inches.of(.5)), // Position for scoring in L2
-//     L3(Inches.of(30.25), Inches.of(.5)), // Position for scoring in L3
-//     L4(Inches.of(55), Inches.of(.5)), // Position for scoring in L4
-//     ALGAE_LOW(Inches.of(10), Inches.of(1)), // Position for grabbing low algae
-//     ALGAE_HIGH(Inches.of(25), Inches.of(1)); // Position for grabbing high algae
+    public Command gotoA1() {
+        return parallel(
+            run(() -> { liftToQuickly(Constants.Elevator.Lift.A1PrepPosition); }),
+            run(() -> { driveAngleTo(Constants.Elevator.Arm.A1PrepPosition); })
+        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint()).withName("Going to A1");
+    }
 
-//     private final Distance targetDistance;
-//     private final Distance angleTolerance;
+    public Command gotoL2() {
+        return parallel(
+            run(() -> { liftToQuickly(Constants.Elevator.Lift.L2PrepPosition); }),
+            run(() -> { driveAngleTo(Constants.Elevator.Arm.L2PrepPosition); })
+        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint()).withName("Going to L2");
+    }
 
-//     ElevatorPosition(Distance targetDistance, Distance angleTolerance) {
-//       this.targetDistance = targetDistance;
-//       this.angleTolerance = angleTolerance;
-//     }
+    public Command gotoA2() {
+        return parallel(
+            run(() -> { liftToQuickly(Constants.Elevator.Lift.A2PrepPosition); }),
+            run(() -> { driveAngleTo(Constants.Elevator.Arm.A2PrepPosition); })
+        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint()).withName("Going to A2");
+    }
 
-//     ElevatorPosition(Distance targetDistance) {
-//       this(targetDistance, Inches.of(2)); // 2 degree default tolerance
-//     }
-//   }
+    public Command gotoL3() {
+        return parallel(
+            run(() -> { liftToQuickly(Constants.Elevator.Lift.L3PrepPosition); }),
+            run(() -> { driveAngleTo(Constants.Elevator.Arm.L3PrepPosition); })
+        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint()).withName("Going to L3");
+    }
 
-//   /**
-//    * Gets the current arm distance mode.
-//    *
-//    * @return The current ElevatorPosition
-//    */
-//   public ElevatorPosition getMode() {
-//     return currentMode;
-//   }
+    public Command gotoL4() {
+        return null;
+    }
 
-//   /**
-//    * Sets a new arm distance and schedules the corresponding command.
-//    *
-//    * @param mode The desired ElevatorPosition
-//    */
-//   private void setElevatorPosition(ElevatorPosition mode) {
-//     if (currentMode != mode) {
-//       currentCommand.cancel();
-//       currentMode = mode;
-//       currentCommand.schedule();
-//     }
-//   }
-
-//   // Command that runs the appropriate routine based on the current distance
-//   private final Command currentCommand =
-//       new SelectCommand<>(
-//           Map.of(
-//               ElevatorPosition.STOP,
-//               Commands.runOnce(this::stop).withName("Stop Elevator"),
-//               ElevatorPosition.INTAKE,
-//               createPositionCommand(ElevatorPosition.INTAKE),
-//               ElevatorPosition.L1,
-//               createPositionCommand(ElevatorPosition.L1),
-//               ElevatorPosition.L2,
-//               createPositionCommand(ElevatorPosition.L2),
-//               ElevatorPosition.L3,
-//               createPositionCommand(ElevatorPosition.L3),
-//               ElevatorPosition.L4,
-//               createPositionCommand(ElevatorPosition.L4),
-//               ElevatorPosition.ALGAE_LOW,
-//               createPositionCommand(ElevatorPosition.ALGAE_LOW),
-//               ElevatorPosition.ALGAE_HIGH,
-//               createPositionCommand(ElevatorPosition.ALGAE_HIGH)),
-//           this::getMode);
-
-//   /**
-//    * Creates a command for a specific arm distance that moves the arm and checks the target
-//    * distance.
-//    *
-//    * @param distance The arm distance to create a command for
-//    * @return A command that implements the arm movement
-//    */
-//   private Command createPositionCommand(ElevatorPosition distance) {
-//     return Commands.runOnce(() -> setDistance(distance.targetDistance))
-//         .withName("Move to " + distance.toString());
-//   }
-
-//   /**
-//    * Checks if the arm is at its target distance.
-//    *
-//    * @return true if at target distance, false otherwise
-//    */
-//   @AutoLogOutput
-//   public boolean isAtTarget() {
-//     if (currentMode == ElevatorPosition.STOP) return true;
-//     return getPosition().isNear(currentMode.targetDistance, currentMode.angleTolerance);
-//   }
-
-//   /**
-//    * Logs target angle for given mode.
-//    *
-//    * @return The target angle for the current mode
-//    */
-//   @AutoLogOutput
-//   private Distance targetDistance() {
-//     return currentMode.targetDistance;
-//   }
-
-//   /**
-//    * Creates a command to set the arm to a specific distance.
-//    *
-//    * @param distance The desired arm distance
-//    * @return Command to set the distance
-//    */
-//   private Command setPositionCommand(ElevatorPosition distance) {
-//     return Commands.runOnce(() -> setElevatorPosition(distance))
-//         .withName("SetElevatorPosition(" + distance.toString() + ")");
-//   }
-
-//   /** Factory methods for common distance commands */
-
-//   /**
-//    * @return Command to move the arm to L1 scoring distance
-//    */
-//   public final Command L1() {
-//     return setPositionCommand(ElevatorPosition.L1);
-//   }
-
-//   /**
-//    * @return Command to move the arm to L2 scoring distance
-//    */
-//   public final Command L2() {
-//     return setPositionCommand(ElevatorPosition.L2);
-//   }
-
-//   /**
-//    * @return Command to move the arm to L3 distance
-//    */
-//   public final Command L3() {
-//     return setPositionCommand(ElevatorPosition.L3);
-//   }
-
-//   /**
-//    * @return Command to move the arm to L4 distance
-//    */
-//   public final Command L4() {
-//     return setPositionCommand(ElevatorPosition.L4);
-//   }
-
-//   /**
-//    * @return Command to move the arm to the low algae distance
-//    */
-//   public final Command AlgaeLow() {
-//     return setPositionCommand(ElevatorPosition.ALGAE_LOW);
-//   }
-
-//   /**
-//    * @return Command to move the arm to the high algae distance
-//    */
-//   public final Command AlgaeHigh() {
-//     return setPositionCommand(ElevatorPosition.ALGAE_HIGH);
-//   }
-
-//   /**
-//    * @return Command to intake the arm
-//    */
-//   public final Command intake() {
-//     return setPositionCommand(ElevatorPosition.INTAKE);
-//   }
-
-//   /**
-//    * @return Command to stop the arm
-//    */
-//   public final Command stopCommand() {
-//     return setPositionCommand(ElevatorPosition.STOP);
-//   }
+    public Command release() {
+        return null;
+    }
 }

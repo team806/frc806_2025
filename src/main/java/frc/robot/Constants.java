@@ -96,6 +96,24 @@ public class Constants {
     public interface Elevator {
         public interface Lift {
             public static final int MotorID = 15;
+            public static final double kFastP = 0;
+            public static final double kFastI = 0;
+            public static final double kFastD = 0;
+            public static final double kSlowP = 0;
+            public static final double kSlowI = 0;
+            public static final double kSlowD = 0;
+
+            public static final double IdlePosition = 0;
+        }
+
+
+        public static final class Arm {
+            public static final double kP = 0.0;
+            public static final double kI = 0.0;
+            public static final double kD = 0.0;
+
+            public static final double IdlePosition = 0;
+
         }
     }
 
