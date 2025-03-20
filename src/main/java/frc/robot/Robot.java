@@ -25,7 +25,7 @@ public class Robot extends TimedRobot {
   private RobotContainer m_robotContainer;     
   
   private final Climber climber = new Climber(Constants.Climber.MotorID);
-  private final Elevator elevator = new Elevator(Constants.Elevator.Lift.MotorID,Constants.Elevator.Intake.MotorID,Constants.Elevator.Intake.sensorPort);
+  private final Elevator elevator = new Elevator(Constants.Elevator.Lift.MotorID,Constants.Elevator.Arm.MotorID,Constants.Elevator.Intake.MotorID,Constants.Elevator.Intake.sensorPort);
 
   CommandXboxController driveController = new CommandXboxController(0);
   XboxController coDriverController = new XboxController(1);

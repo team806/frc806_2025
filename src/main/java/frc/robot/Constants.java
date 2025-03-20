@@ -117,6 +117,7 @@ public class Constants {
 
 
         public static interface Arm {
+            public static final int MotorID = 18;
             public static final double kP = 0.0;
             public static final double kI = 0.0;
             public static final double kD = 0.0;
