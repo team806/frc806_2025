@@ -111,8 +111,9 @@ public class Constants {
             public static final double L2PrepPosition = 0;
             public static final double A2PrepPosition = 0;
             public static final double L3PrepPosition = 0;
+            public static final double L4FastPrepPosition = 0;
             public static final double L4PrepPosition = 0;
-        
+            public static final double L4ReleasePosition = 0;
             
         }
 
@@ -131,8 +132,9 @@ public class Constants {
             public static final double A2PrepPosition = 0;
             public static final double L3PrepPosition = 0;
             public static final double L4PrepPosition = 0;
-            
 
+            public static final double A1ReleasePosition = 0;
+            public static final double A2ReleasePosition = 0;
         }
 
         public interface  Intake{
@@ -141,6 +143,9 @@ public class Constants {
             public static final double IntakeTimeout = 0;
             public static final double HoldSpeed = 0;
             public static final int sensorPort = 1;
+            public static final double ReleaseSpeed = 0;
+            public static final double AlgaeSpeed = 0;
+            public static final double ReleaseTime = 0;
         }
 
     
