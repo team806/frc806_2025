@@ -1,6 +1,7 @@
 package frc.robot.Subsystems;
 
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
+import static edu.wpi.first.wpilibj2.command.Commands.select;
 
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.RelativeEncoder;
@@ -31,6 +32,18 @@ public class Elevator extends SubsystemBase {
     private final SlewRateLimiter liftLimiter = new SlewRateLimiter(2);
     private final SlewRateLimiter angLimiter = new SlewRateLimiter(2);
 
+    private enum ElevatorPosition {
+        IDLE,
+        L1,
+        A1,
+        L2,
+        A2,
+        L3,
+        L4
+    }
+
+    private ElevatorPosition position = ElevatorPosition.IDLE;
+
     public Elevator(int liftMotorId, int armMotorId, int armEncoderId, int intakeMotorId, int coralSensorId) {
         liftMotor = new SparkMax(liftMotorId, MotorType.kBrushless);
         liftEncoder = liftMotor.getEncoder();
@@ -57,6 +70,7 @@ public class Elevator extends SubsystemBase {
 
     public Command idle() {
         return parallel(
+            runOnce(() -> { position = ElevatorPosition.IDLE; }),
             runOnce(() -> { intakeMotor.set(0);}),
             run(() -> { driveAngleTo(Constants.Elevator.Arm.IdlePosition); }),
             run(() -> { liftToSlowly(Constants.Elevator.Lift.IdlePosition); })
@@ -82,54 +96,110 @@ public class Elevator extends SubsystemBase {
                 coralSensor::get
             )
         );
-        
-        // Drive lift to coral station height, drive arm to coral station angle
-        // Rotate instake
-        // Wait for timeout or coral sensor
-        // Timeout, stop intake and leave
-        // Hit, stop intake
     }
 
     public Command gotoL1() {
         return parallel(
             run(() -> { liftToQuickly(Constants.Elevator.Lift.L1PrepPosition); }),
             run(() -> { driveAngleTo(Constants.Elevator.Arm.L1PrepPosition); })
-        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint()).withName("Going to L1");
+        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint())
+        .andThen(runOnce(() -> { position = ElevatorPosition.L1; })).withName("Going to L1");
     }
 
     public Command gotoA1() {
         return parallel(
             run(() -> { liftToQuickly(Constants.Elevator.Lift.A1PrepPosition); }),
             run(() -> { driveAngleTo(Constants.Elevator.Arm.A1PrepPosition); })
-        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint()).withName("Going to A1");
+        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint())
+        .andThen(runOnce(() -> { position = ElevatorPosition.A1; })).withName("Going to A1");
     }
 
     public Command gotoL2() {
         return parallel(
             run(() -> { liftToQuickly(Constants.Elevator.Lift.L2PrepPosition); }),
             run(() -> { driveAngleTo(Constants.Elevator.Arm.L2PrepPosition); })
-        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint()).withName("Going to L2");
+        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint())
+        .andThen(runOnce(() -> { position = ElevatorPosition.L2; })).withName("Going to L2");
     }
 
     public Command gotoA2() {
         return parallel(
             run(() -> { liftToQuickly(Constants.Elevator.Lift.A2PrepPosition); }),
             run(() -> { driveAngleTo(Constants.Elevator.Arm.A2PrepPosition); })
-        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint()).withName("Going to A2");
+        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint())
+        .andThen(runOnce(() -> { position = ElevatorPosition.A2; })).withName("Going to A2");
     }
 
     public Command gotoL3() {
         return parallel(
             run(() -> { liftToQuickly(Constants.Elevator.Lift.L3PrepPosition); }),
             run(() -> { driveAngleTo(Constants.Elevator.Arm.L3PrepPosition); })
-        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint()).withName("Going to L3");
+        ).until(() -> angController.atSetpoint() && fastLiftController.atSetpoint())
+        .andThen(runOnce(() -> { position = ElevatorPosition.L3; })).withName("Going to L3");
     }
 
     public Command gotoL4() {
-        return null;
+        return parallel(
+            run(() -> { liftToQuickly(Constants.Elevator.Lift.L4FastPrepPosition); })
+                .until(() -> fastLiftController.atSetpoint()).
+                .andThen(run(() -> {
+                    liftToSlowly(Constants.Elevator.Lift.L4PrepPosition);
+                }))
+            run(() -> { driveAngleTo(Constants.Elevator.Arm.L4PrepPosition); })
+        ).until(() -> angController.atSetpoint() && slowLiftController.atSetpoint())
+        .andThen(runOnce(() -> { position = ElevatorPosition.L4; })).withName("Going to L4");
     }
 
     public Command release() {
-        return null;
+        return select(
+            Map.of(
+                ElevatorPosition.L1, releaseL1(),
+                ElevatorPosition.A1, releaseA1(),
+                ElevatorPosition.L2, releaseL2(),
+                ElevatorPosition.A2, releaseA2(),
+                ElevatorPosition.L3, releaseL3(),
+                ElevatorPosition.L4, releaseL4()
+            ),
+            () -> position);
+    }
+
+    public Command releaseL1() {
+        return runOnce(() -> { intakeMotor.set(Constants.Elevator.Intake.ReleaseSpeed); })
+        .andThen(waitSeconds(Constants.Elevator.Intake.ReleaseTime))
+        .andThen(runOnce(() -> { intakeMotor.set(0); })).withName("Releasing L1");
+    }
+
+    public Command releaseA1() {
+        return parallel(
+            runOnce(() -> { intakeMotor.set(Constants.Elevator.Intake.AlgaeSpeed); }),
+            run(() -> { driveAngleTo(Constants.Elevator.Arm.A1ReleasePosition); })
+        ).until(() -> angController.atSetpoint()).withName("Releasing A1");
+    }
+
+    public Command releaseL2() {
+        return runOnce(() -> { intakeMotor.set(Constants.Elevator.Intake.ReleaseSpeed); })
+        .andThen(waitSeconds(Constants.Elevator.Intake.ReleaseTime))
+        .andThen(runOnce(() -> { intakeMotor.set(0); })).withName("Releasing L2");
+    }
+
+    public Command releaseA2() {
+        return parallel(
+            runOnce(() -> { intakeMotor.set(Constants.Elevator.Intake.AlgaeSpeed); }),
+            run(() -> { driveAngleTo(Constants.Elevator.Arm.A2ReleasePosition); })
+        ).until(() -> angController.atSetpoint()).withName("Releasing A2");
+    }
+
+    public Command releaseL3() {
+        return runOnce(() -> { intakeMotor.set(Constants.Elevator.Intake.ReleaseSpeed); })
+        .andThen(waitSeconds(Constants.Elevator.Intake.ReleaseTime))
+        .andThen(runOnce(() -> { intakeMotor.set(0); })).withName("Releasing L3");
+    }
+
+    public Command releaseL4() {
+        return parallel(
+            runOnce(() -> { intakeMotor.set(Constants.Elevator.Intake.ReleaseSpeed); }),
+            run(() -> { liftToSlowly(Constants.Elevator.Lift.L4ReleasePosition); }),
+        ).until(() -> slowLiftController.atSetpoint())
+        .andThen(runOnce(() -> { intakeMotor.set(0); })).withName("Releasing L4");
     }
 }
