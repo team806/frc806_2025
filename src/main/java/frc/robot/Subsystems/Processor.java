@@ -3,6 +3,7 @@ package frc.robot.Subsystems;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkFlexConfig;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -29,6 +30,7 @@ public class Processor extends SubsystemBase {
     private final SparkFlex angleMotor;
     private final SparkFlex intakeMotor;
     private  DigitalInput algaeSensor;
+    private final SparkFlexConfig angleMotorConfig;
     private final SparkAbsoluteEncoder angleEncoder;
     private final PIDController angController = new PIDController(3, 0, 0);
     private final SlewRateLimiter angLimiter = new SlewRateLimiter(2);
@@ -43,6 +45,12 @@ public class Processor extends SubsystemBase {
     private ProcessorState desiredIntakeState;
     public Processor() {
         angleMotor = new SparkFlex(Constants.Pconstants.angID, MotorType.kBrushless);
+        angleMotorConfig = new SparkFlexConfig();
+            angleMotorConfig.softLimit.forwardSoftLimitEnabled(false);
+            angleMotorConfig.softLimit.forwardSoftLimit(-1.5);
+            angleMotorConfig.softLimit.reverseSoftLimitEnabled(false);
+            angleMotorConfig.softLimit.reverseSoftLimit(18);
+    
         intakeMotor = new SparkFlex(Constants.Pconstants.intakeID, MotorType.kBrushless);
         algaeSensor = new DigitalInput(0);
             
@@ -180,6 +188,21 @@ public class Processor extends SubsystemBase {
                         store()
                     ));
              
+    }
+
+    public Command manualDown(){
+        return runEnd(()->angleMotor.set(-0.2),()->{angleMotor.set(0.07);});
+    }
+
+    public Command manualUp(){
+        return runEnd(()->angleMotor.set(0.3),()->{angleMotor.set(0.07);});
+    }
+    public Command manualIn(){
+        return runEnd(()->intakeMotor.set(0.75),()->intakeMotor.set(0));
+    }
+
+    public Command manualOut(){
+        return runEnd(()->intakeMotor.set(-0.75),()->intakeMotor.set(0));
     }
 
     @Override

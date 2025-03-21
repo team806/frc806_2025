@@ -26,6 +26,7 @@ public class Elevator extends SubsystemBase {
     private final PIDController armController = new PIDController(Constants.Elevator.Arm.kP, Constants.Elevator.Arm.kI, Constants.Elevator.Arm.kD);
 
     private final SparkMax liftMotor;
+    //private final SparkMax followMotor;
     private final RelativeEncoder liftEncoder;
     private final SparkFlex armMotor;
     private final SparkAbsoluteEncoder armEncoder;
@@ -35,9 +36,15 @@ public class Elevator extends SubsystemBase {
     private final SlewRateLimiter liftLimiter = new SlewRateLimiter(2);
     private final SlewRateLimiter angLimiter = new SlewRateLimiter(2);
 
+    //private double armdownspeed;
+    //private double armupspeed;
+    //private double armholdspeed;
+
     public Elevator(int liftMotorId, int armMotorId, int intakeMotorId, int coralSensorPort) {
         liftMotor = new SparkMax(liftMotorId, MotorType .kBrushless);
         liftEncoder = liftMotor.getEncoder();
+        //followMotor = new SparkMax(15, MotorType.kBrushless);
+    
 
         armMotor = new SparkFlex(armMotorId, MotorType.kBrushless);
         //armEncoder = new CANcoder(armEncoderId, "Default Name");
@@ -131,10 +138,52 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command gotoL4() {
-        return null;
+        return parallel(
+            run(() -> { liftToQuickly(Constants.Elevator.Lift.L4PrepPosition); }),
+            run(() -> { driveAngleTo(Constants.Elevator.Arm.L4PrepPosition); })
+        ).until(() -> armController.atSetpoint() && fastLiftController.atSetpoint()).withName("Going to L4");
     }
 
     public Command release() {
-        return null;
+        return run(()->intakeMotor.set(-Constants.Elevator.Intake.IntakeSpeed))
+        .andThen(
+            race(
+                waitSeconds(Constants.Elevator.Intake.IntakeTimeout),
+                waitUntil(() -> coralSensor.get())));
+                
     }
+    public Command manualUp(){
+        return this.runEnd(()->{liftMotor.set(-0.2);},
+                        ()->{liftMotor.set(-0.075);});
+    }
+
+    public Command manualDown(){
+        return this.runEnd(()->{liftMotor.set(0);},
+                        ()->{liftMotor.set(-0.075);});
+    }
+    public Command manualOut(){
+        return this.runEnd(()->{armMotor.set(0.2);},
+                        ()->{armMotor.set(-0.04);});
+    }
+
+    public Command manualIn(){
+        return this.runEnd(()->{armMotor.set(-0.2);},
+                        ()->{armMotor.set(-0.04);});
+    }
+
+    public Command manualIntake(){
+        return this.runEnd(()->{intakeMotor.set(0.5);},
+                        ()->{intakeMotor.set(0);});
+    }
+
+    public Command manualShoot(){
+        return this.runEnd(()->{intakeMotor.set(-0.5);},
+                        ()->{intakeMotor.set(0);});
+    }
+
+    //@Override
+    //public void periodic() {
+    //    smartdash
+    //
+    //}
 }

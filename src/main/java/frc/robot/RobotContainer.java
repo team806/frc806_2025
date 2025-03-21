@@ -4,28 +4,28 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-
-import frc.robot.Subsystems.DrivetrainSubsystem;
+import frc.robot.Subsystems.Climber;
+import frc.robot.Subsystems.Elevator;
+import frc.robot.Subsystems.Processor;
 
 public class RobotContainer {
 
   //private Robot robot;
 
   
-
+  private final Climber climber = new Climber(Constants.Climber.MotorID);
+  private final Elevator elevator = new Elevator(Constants.Elevator.Lift.MotorID,Constants.Elevator.Arm.MotorID,Constants.Elevator.Intake.MotorID,Constants.Elevator.Intake.sensorPort);
+  private final Processor processor = new Processor();
   SendableChooser<Command> m_chooser = new SendableChooser<>();
 
 
-  CommandXboxController DriveController = new CommandXboxController(0);
+  //CommandXboxController DriveController = new CommandXboxController(0);
   //SmartDashboard
-  //CommandXboxController coDriveController = new CommandXboxController(1);
+  CommandXboxController coDriveController = new CommandXboxController(1);
   //Trigger xButton = DriveController.x();  
   //Trigger yButton = DriveController.y();  
   //Trigger bButton = DriveController.b();  
@@ -34,6 +34,20 @@ public class RobotContainer {
   //Trigger noteAquired = new Trigger(IntakeSubsystem.getInstance()::getHasNote);
   //Trigger dPadUp = DriveController.povUp();
   //Trigger dPadDown = DriveController.povDown();
+  Trigger dpadup = coDriveController.povUp();
+  Trigger dpaddn = coDriveController.povDown();
+  Trigger dpadr = coDriveController.povRight();
+  Trigger dpadl = coDriveController.povLeft();
+  Trigger lsb = coDriveController.leftStick();
+  Trigger rsb = coDriveController.rightStick();
+  Trigger y = coDriveController.y();
+  Trigger x = coDriveController.x();
+  Trigger a = coDriveController.a();
+  Trigger b = coDriveController.b();
+  Trigger lb = coDriveController.leftBumper();
+  Trigger rb = coDriveController.rightBumper();
+  Trigger rt = coDriveController.rightTrigger();
+  Trigger lt = coDriveController.leftTrigger();
 
   public RobotContainer() {
 
@@ -46,6 +60,25 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
+
+  lt.whileTrue(elevator.manualUp());
+  rt.whileTrue(elevator.manualDown());
+  dpadl.whileTrue(elevator.manualIn());
+  dpadr.whileTrue(elevator.manualOut());  
+  lsb.whileTrue(elevator.manualIntake());
+  rsb.whileTrue(elevator.manualShoot()); 
+
+
+
+  rb.whileTrue(processor.manualDown());
+  lb.whileTrue(processor.manualUp());
+  x.whileTrue(processor.manualIn());
+  b.whileTrue(processor.manualOut());
+    //y.onTrue(processor.autointake());
+    ////a.onTrue(processor.autoshoot());
+    //x.onTrue(processor.store());
+    //lb.whileTrue(climber.climbCommand());
+    //rb.whileTrue(climber.releaseCommand());
 
     //xButton.onTrue(new IntakeSetAng(IntakeAng.Speaker));
     //yButton.onTrue(new IntakeSetAng(IntakeAng.Amp));

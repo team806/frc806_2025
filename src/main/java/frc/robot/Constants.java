@@ -19,7 +19,7 @@ public class Constants {
     public static final double attainableMaxTranslationalSpeedMPS = attainableMaxModuleSpeedMPS;
     public static final double attainableMaxRotationalVelocityRPS = attainableMaxModuleSpeedMPS/DriveBaseRadius;
 
-    public static final int PigeonID = 0;   
+    public static final int PigeonID = 22;   
 
     public static double controllerDeadband = 0.15; 
 
@@ -84,7 +84,7 @@ public class Constants {
     }
 
     public interface Climber{
-        public static final int MotorID = 20;
+        public static final int MotorID = 19;
         
         public static final int CurrentLimit = 80;
 
@@ -111,6 +111,7 @@ public class Constants {
             public static final double L2PrepPosition = 0;
             public static final double A2PrepPosition = 0;
             public static final double L3PrepPosition = 0;
+            public static final double L4PrepPosition = 0;
         
             
         }
@@ -129,6 +130,7 @@ public class Constants {
             public static final double L2PrepPosition = 0;
             public static final double A2PrepPosition = 0;
             public static final double L3PrepPosition = 0;
+            public static final double L4PrepPosition = 0;
             
 
         }
