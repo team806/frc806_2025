@@ -94,6 +94,7 @@ public class Constants {
     }
 
     public interface Elevator {
+
         public interface Lift {
             public static final int MotorID = 15;
             public static final double kFastP = 0;
@@ -104,17 +105,50 @@ public class Constants {
             public static final double kSlowD = 0;
 
             public static final double IdlePosition = 0;
+            public static final double IntakePosition = 0;
+            public static final double L1PrepPosition = 0;
+            public static final double A1PrepPosition = 0;
+            public static final double L2PrepPosition = 0;
+            public static final double A2PrepPosition = 0;
+            public static final double L3PrepPosition = 0;
+            public static final double L4FastPrepPosition = 0;
+            public static final double L4PrepPosition = 0;
+            public static final double L4ReleasePosition = 0;
+            
         }
 
 
-        public static final class Arm {
+        public static interface Arm {
+            public static final int MotorID = 18;
             public static final double kP = 0.0;
             public static final double kI = 0.0;
             public static final double kD = 0.0;
 
             public static final double IdlePosition = 0;
+            public static final double IntakePosition = 0;
+            public static final double L1PrepPosition = 0;
+            public static final double A1PrepPosition = 0;
+            public static final double L2PrepPosition = 0;
+            public static final double A2PrepPosition = 0;
+            public static final double L3PrepPosition = 0;
+            public static final double L4PrepPosition = 0;
 
+            public static final double A1ReleasePosition = 0;
+            public static final double A2ReleasePosition = 0;
         }
+
+        public interface  Intake{
+            public static final int MotorID = 17;
+            public static final double IntakeSpeed = 0;
+            public static final double IntakeTimeout = 0;
+            public static final double HoldSpeed = 0;
+            public static final int sensorPort = 1;
+            public static final double ReleaseSpeed = 0;
+            public static final double AlgaeSpeed = 0;
+            public static final double ReleaseTime = 0;
+        }
+
+    
     }
 
     public interface Motion {
