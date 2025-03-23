@@ -61,13 +61,13 @@ public class RobotContainer {
 
   private void configureBindings() {
 
-  lt.whileTrue(elevator.manualUp());
-  rt.whileTrue(elevator.manualDown());
-  dpadl.whileTrue(elevator.manualIn());
-  dpadr.whileTrue(elevator.manualOut());  
-  y.whileTrue(elevator.manualIntake());
-  a.whileTrue(elevator.manualShoot()); 
-  // lt.whileTrue(elevator.gotoA1());
+  // lt.whileTrue(elevator.manualUp());
+  // rt.whileTrue(elevator.manualDown());
+  // dpadl.whileTrue(elevator.manualIn());
+  // dpadr.whileTrue(elevator.manualOut());  
+  // y.whileTrue(elevator.manualIntake());
+  // a.whileTrue(elevator.manualShoot()); 
+  lt.whileTrue(elevator.gotoA1());
 
 
 

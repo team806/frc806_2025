@@ -40,6 +40,12 @@ public class Elevator extends SubsystemBase {
     private final SlewRateLimiter liftLimiter = new SlewRateLimiter(2);
     private final SlewRateLimiter angLimiter = new SlewRateLimiter(2);
 
+    private class Lol extends SubsystemBase {
+
+    }
+
+    private final Lol lol = new Lol();
+
     private enum ElevatorPosition {
         IDLE,
         L1,
@@ -75,6 +81,7 @@ public class Elevator extends SubsystemBase {
 
     public void periodic() {
         SmartDashboard.putNumber("elevator sensor", liftEncoder.getPosition());
+        SmartDashboard.putNumber("arm sensor", armEncoder.getPosition());
     }
 
     private void liftToSlowly(double setpoint) {
@@ -125,9 +132,9 @@ public class Elevator extends SubsystemBase {
 
     public Command gotoA1() {
         return parallel(
-            run(() -> { liftToQuickly(Constants.Elevator.Lift.A1PrepPosition); })//,
-            //run(() -> { driveAngleTo(Constants.Elevator.Arm.A1PrepPosition); })
-        ).until(() -> /*armController.atSetpoint() && */fastLiftController.atSetpoint())
+            run(() -> { liftToQuickly(Constants.Elevator.Lift.A1PrepPosition); }),
+            run(() -> { driveAngleTo(Constants.Elevator.Arm.A1PrepPosition); }, lol)-*-
+        ).until(() -> armController.atSetpoint() && fastLiftController.atSetpoint())
         .andThen(runOnce(() -> { position = ElevatorPosition.A1; })).finallyDo(() -> { liftMotor.set(0); }).withName("Going to A1");
     }
 
