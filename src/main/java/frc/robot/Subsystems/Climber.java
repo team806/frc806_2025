@@ -20,10 +20,11 @@ public class Climber extends SubsystemBase {
         SparkMaxConfig driveConfig = new SparkMaxConfig();
         driveConfig.smartCurrentLimit(Constants.Climber.CurrentLimit);
         driveConfig.idleMode(IdleMode.kBrake);
-        driveConfig.softLimit.forwardSoftLimitEnabled(true);
-        driveConfig.softLimit.forwardSoftLimit(-8);
-        driveConfig.softLimit.reverseSoftLimitEnabled(true);
-        driveConfig.softLimit.reverseSoftLimit(-150);
+        driveConfig.smartCurrentLimit(80);
+        //driveConfig.softLimit.forwardSoftLimitEnabled(true);
+        //driveConfig.softLimit.forwardSoftLimit(-8);
+        //driveConfig.softLimit.reverseSoftLimitEnabled(true);
+        //driveConfig.softLimit.reverseSoftLimit(-150);
         
         driveMotor.configure(driveConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }

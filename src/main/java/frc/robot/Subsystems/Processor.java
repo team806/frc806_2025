@@ -191,18 +191,19 @@ public class Processor extends SubsystemBase {
     }
 
     public Command manualDown(){
-        return runEnd(()->angleMotor.set(-0.2),()->{angleMotor.set(0.07);});
+        return runEnd(()->angleMotor.set(-0.2),()->{angleMotor.set(0.02);});
     }
 
     public Command manualUp(){
-        return runEnd(()->angleMotor.set(0.3),()->{angleMotor.set(0.07);});
+        return runEnd(()->angleMotor.set(0.2),()->{angleMotor.set(0.02);});
     }
+
     public Command manualIn(){
-        return runEnd(()->intakeMotor.set(0.75),()->intakeMotor.set(0));
+        return runEnd(()->intakeMotor.set(1),()->intakeMotor.set(0.1));
     }
 
     public Command manualOut(){
-        return runEnd(()->intakeMotor.set(-0.75),()->intakeMotor.set(0));
+        return runEnd(()->intakeMotor.set(-0.75),()->intakeMotor.set(0.1));
     }
 
     @Override

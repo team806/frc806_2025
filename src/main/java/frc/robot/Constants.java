@@ -29,15 +29,19 @@ public class Constants {
         
             public static final int FrontLeftDriveID   = 4, FrontLeftSteerID   = 5, FrontLeftEncoderID = 6;
 			public static final double FrontLeftEncoderOffset = -0.456;//-0.423340 rotations raw = 0.000000 rotations
+            // public static final double FrontLeftEncoderOffset = 0;
 
             public static final int FrontRightDriveID   = 1, FrontRightSteerID   = 2, FrontRightEncoderID = 3;
             public static final double FrontRightEncoderOffset = -0.347;//0.484131 rotations raw = -0.000244 rotations
+            // public static final double FrontRightEncoderOffset = 0;
 
             public static final int RearLeftDriveID   = 7, RearLeftSteerID   = 8, RearLeftEncoderID = 9;
             public static final double RearLeftEncoderOffset = 0.386;//0.283691 rotations raw = -0.000244 rotations
+            // public static final double RearLeftEncoderOffset = 0;
 
             public static final int RearRightDriveID   = 10, RearRightSteerID   = 11, RearRightEncoderID = 12;
             public static final double RearRightEncoderOffset = 0.131;//0.448730 rotations raw = 0.000244 rotations
+            // public static final double RearRightEncoderOffset = 0;
         
     }
                 //TODO not really a todo, but i had to name it this way or java got mad at me
@@ -97,17 +101,17 @@ public class Constants {
 
         public interface Lift {
             public static final int MotorID = 15;
-            public static final double kFastP = 0;
+            public static final double kFastP = 0.05;
             public static final double kFastI = 0;
             public static final double kFastD = 0;
-            public static final double kSlowP = 0;
+            public static final double kSlowP = 0.01;
             public static final double kSlowI = 0;
             public static final double kSlowD = 0;
 
             public static final double IdlePosition = 0;
             public static final double IntakePosition = 0;
             public static final double L1PrepPosition = 0;
-            public static final double A1PrepPosition = 0;
+            public static final double A1PrepPosition = 2;
             public static final double L2PrepPosition = 0;
             public static final double A2PrepPosition = 0;
             public static final double L3PrepPosition = 0;

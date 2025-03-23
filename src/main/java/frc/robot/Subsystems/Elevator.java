@@ -1,9 +1,7 @@
 package frc.robot.Subsystems;
 
-import static edu.wpi.first.wpilibj2.command.Commands.parallel;
-import static edu.wpi.first.wpilibj2.command.Commands.select;
+import java.util.Map;
 
-import com.ctre.phoenix6.hardware.CANcoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkFlex;
@@ -14,16 +12,15 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import static edu.wpi.first.wpilibj2.command.Commands.either;
 import static edu.wpi.first.wpilibj2.command.Commands.none;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.race;
+import static edu.wpi.first.wpilibj2.command.Commands.select;
 import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
-
-import java.util.Map;
-
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -43,14 +40,6 @@ public class Elevator extends SubsystemBase {
     private final SlewRateLimiter liftLimiter = new SlewRateLimiter(2);
     private final SlewRateLimiter angLimiter = new SlewRateLimiter(2);
 
-<<<<<<< HEAD
-    //private double armdownspeed;
-    //private double armupspeed;
-    //private double armholdspeed;
-
-    public Elevator(int liftMotorId, int armMotorId, int intakeMotorId, int coralSensorPort) {
-        liftMotor = new SparkMax(liftMotorId, MotorType .kBrushless);
-=======
     private enum ElevatorPosition {
         IDLE,
         L1,
@@ -65,8 +54,7 @@ public class Elevator extends SubsystemBase {
 
     public Elevator(int liftMotorId, int armMotorId, int intakeMotorId, int coralSensorId) {
         liftMotor = new SparkMax(liftMotorId, MotorType.kBrushless);
->>>>>>> e38f2380232d4071be43ec76e5b837fdcb787f01
-        liftEncoder = liftMotor.getEncoder();
+        liftEncoder = liftMotor.getAlternateEncoder();
         //followMotor = new SparkMax(15, MotorType.kBrushless);
     
 
@@ -80,11 +68,17 @@ public class Elevator extends SubsystemBase {
     }
 
     private void liftToQuickly(double setpoint) {
-        armMotor.set(MathUtil.clamp(angLimiter.calculate(fastLiftController.calculate(armEncoder.getPosition(), setpoint)), -1, 1));
+        var speed = -MathUtil.clamp(liftLimiter.calculate(fastLiftController.calculate(liftEncoder.getPosition(), setpoint)), -1, 1);
+        SmartDashboard.putNumber("elevator", speed);
+        liftMotor.set(speed);
+    }
+
+    public void periodic() {
+        SmartDashboard.putNumber("elevator sensor", liftEncoder.getPosition());
     }
 
     private void liftToSlowly(double setpoint) {
-        armMotor.set(MathUtil.clamp(angLimiter.calculate(slowLiftController.calculate(armEncoder.getPosition(), setpoint)), -1, 1));
+        liftMotor.set(MathUtil.clamp(liftLimiter.calculate(slowLiftController.calculate(liftEncoder.getPosition(), setpoint)), -1, 1));
     }
 
     private void driveAngleTo(double setpoint) {
@@ -131,10 +125,10 @@ public class Elevator extends SubsystemBase {
 
     public Command gotoA1() {
         return parallel(
-            run(() -> { liftToQuickly(Constants.Elevator.Lift.A1PrepPosition); }),
-            run(() -> { driveAngleTo(Constants.Elevator.Arm.A1PrepPosition); })
-        ).until(() -> armController.atSetpoint() && fastLiftController.atSetpoint())
-        .andThen(runOnce(() -> { position = ElevatorPosition.A1; })).withName("Going to A1");
+            run(() -> { liftToQuickly(Constants.Elevator.Lift.A1PrepPosition); })//,
+            //run(() -> { driveAngleTo(Constants.Elevator.Arm.A1PrepPosition); })
+        ).until(() -> /*armController.atSetpoint() && */fastLiftController.atSetpoint())
+        .andThen(runOnce(() -> { position = ElevatorPosition.A1; })).finallyDo(() -> { liftMotor.set(0); }).withName("Going to A1");
     }
 
     public Command gotoL2() {
@@ -163,20 +157,6 @@ public class Elevator extends SubsystemBase {
 
     public Command gotoL4() {
         return parallel(
-<<<<<<< HEAD
-            run(() -> { liftToQuickly(Constants.Elevator.Lift.L4PrepPosition); }),
-            run(() -> { driveAngleTo(Constants.Elevator.Arm.L4PrepPosition); })
-        ).until(() -> armController.atSetpoint() && fastLiftController.atSetpoint()).withName("Going to L4");
-    }
-
-    public Command release() {
-        return run(()->intakeMotor.set(-Constants.Elevator.Intake.IntakeSpeed))
-        .andThen(
-            race(
-                waitSeconds(Constants.Elevator.Intake.IntakeTimeout),
-                waitUntil(() -> coralSensor.get())));
-                
-=======
             run(() -> { liftToQuickly(Constants.Elevator.Lift.L4FastPrepPosition); })
                 .until(() -> fastLiftController.atSetpoint())
                 .andThen(run(() -> {
@@ -238,7 +218,6 @@ public class Elevator extends SubsystemBase {
             run(() -> { liftToSlowly(Constants.Elevator.Lift.L4ReleasePosition); })
         ).until(() -> slowLiftController.atSetpoint())
         .andThen(runOnce(() -> { intakeMotor.set(0); })).withName("Releasing L4");
->>>>>>> e38f2380232d4071be43ec76e5b837fdcb787f01
     }
     public Command manualUp(){
         return this.runEnd(()->{liftMotor.set(-0.2);},

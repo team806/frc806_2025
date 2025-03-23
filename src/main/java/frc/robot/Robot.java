@@ -31,8 +31,8 @@ public class Robot extends TimedRobot {
   double rotationPow = Constants.Drivetrain.RotationPow;
   
   public Command taxi = Commands.deadline(
-      waitSeconds(3),
-      Commands.run(() -> { DrivetrainSubsystem.getInstance().drive(new ChassisSpeeds(-2.5, 0, 0)); })
+      waitSeconds(1.5),
+      Commands.run(() -> {  DrivetrainSubsystem.getInstance().drive(new ChassisSpeeds(1, 0, 0)); })
     )
     .andThen(() -> { DrivetrainSubsystem.getInstance().drive(new ChassisSpeeds(0, 0, 0)); });
 

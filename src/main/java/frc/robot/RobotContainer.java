@@ -65,8 +65,9 @@ public class RobotContainer {
   rt.whileTrue(elevator.manualDown());
   dpadl.whileTrue(elevator.manualIn());
   dpadr.whileTrue(elevator.manualOut());  
-  lsb.whileTrue(elevator.manualIntake());
-  rsb.whileTrue(elevator.manualShoot()); 
+  y.whileTrue(elevator.manualIntake());
+  a.whileTrue(elevator.manualShoot()); 
+  // lt.whileTrue(elevator.gotoA1());
 
 
 
@@ -77,8 +78,8 @@ public class RobotContainer {
     //y.onTrue(processor.autointake());
     ////a.onTrue(processor.autoshoot());
     //x.onTrue(processor.store());
-    //lb.whileTrue(climber.climbCommand());
-    //rb.whileTrue(climber.releaseCommand());
+    dpadup.whileTrue(climber.climbCommand());
+    dpaddn.whileTrue(climber.releaseCommand());
 
     //xButton.onTrue(new IntakeSetAng(IntakeAng.Speaker));
     //yButton.onTrue(new IntakeSetAng(IntakeAng.Amp));
