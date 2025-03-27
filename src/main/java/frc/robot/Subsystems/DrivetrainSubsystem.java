@@ -15,6 +15,8 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
+import edu.wpi.first.wpilibj2.command.Command;
+import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -41,10 +43,10 @@ public class DrivetrainSubsystem extends SubsystemBase{
         }
     //SINGLETON//
         static DrivetrainSubsystem instance = new DrivetrainSubsystem(
-            new swerveModule(Constants.Modules.FrontRightDriveID,Constants.Modules.FrontRightSteerID,Constants.Modules.FrontRightEncoderID,Constants.Modules.FrontRightEncoderOffset),
-            new swerveModule(Constants.Modules.FrontLeftDriveID, Constants.Modules.FrontLeftSteerID, Constants.Modules.FrontLeftEncoderID, Constants.Modules.FrontLeftEncoderOffset ),
-            new swerveModule(Constants.Modules.RearLeftDriveID,  Constants.Modules.RearLeftSteerID,  Constants.Modules.RearLeftEncoderID,  Constants.Modules.RearLeftEncoderOffset  ),
-            new swerveModule(Constants.Modules.RearRightDriveID, Constants.Modules.RearRightSteerID, Constants.Modules.RearRightEncoderID, Constants.Modules.RearRightEncoderOffset )
+            new swerveModule(Constants.Modules.FrontRightDriveID,Constants.Modules.FrontRightSteerID,Constants.Modules.FrontRightEncoderID),
+            new swerveModule(Constants.Modules.FrontLeftDriveID, Constants.Modules.FrontLeftSteerID, Constants.Modules.FrontLeftEncoderID),
+            new swerveModule(Constants.Modules.RearLeftDriveID,  Constants.Modules.RearLeftSteerID,  Constants.Modules.RearLeftEncoderID),
+            new swerveModule(Constants.Modules.RearRightDriveID, Constants.Modules.RearRightSteerID, Constants.Modules.RearRightEncoderID)
         );
         public static DrivetrainSubsystem getInstance() {return instance;}
     //GYRO//
@@ -65,6 +67,24 @@ public class DrivetrainSubsystem extends SubsystemBase{
             //pigeon.
         }
     //DRIVING//
+        public Command calibrate() {
+            return parallel(
+                modules[0].calibrate(),
+                modules[1].calibrate(),
+                modules[2].calibrate(),
+                modules[3].calibrate()
+            ).withName("Calibrate");
+        }
+
+        public Command prepareToCalibrate() {
+            return parallel(
+                modules[0].prepareToCalibrate(),
+                modules[1].prepareToCalibrate(),
+                modules[2].prepareToCalibrate(),
+                modules[3].prepareToCalibrate()
+            ).withName("Prepare to calibrate");
+        }
+
         public void drive(ChassisSpeeds  chassisSpeeds){
             setModuleTargetStates(chassisSpeeds);
         }
