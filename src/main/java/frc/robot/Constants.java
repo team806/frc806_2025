@@ -101,22 +101,22 @@ public class Constants {
 
         public interface Lift {
             public static final int MotorID = 15;
-            public static final double kFastP = 0.33;
+            public static final double kFastP = 0.175;
             public static final double kFastI = 0;
-            public static final double kFastD = 0;
+            public static final double kFastD = 0.001;
             public static final double kSlowP = 0.01;
             public static final double kSlowI = 0;
             public static final double kSlowD = 0;
 
             public static final double IdlePosition = 0;
-            public static final double IntakePosition = 0;
+            public static final double IntakePosition = 1.07;
             public static final double L1PrepPosition = 0;
             public static final double A1PrepPosition = 2;
             public static final double L2PrepPosition = 0;
             public static final double A2PrepPosition = 0;
             public static final double L3PrepPosition = 0;
             public static final double L4FastPrepPosition = 0;
-            public static final double L4PrepPosition = 0;
+            public static final double L4PrepPosition = 6.39;
             public static final double L4ReleasePosition = 0;
             
         }
@@ -124,18 +124,18 @@ public class Constants {
 
         public static interface Arm {
             public static final int MotorID = 18;
-            public static final double kP = 0.0;
+            public static final double kP = 2;
             public static final double kI = 0.0;
             public static final double kD = 0.0;
 
-            public static final double IdlePosition = 0;
-            public static final double IntakePosition = 0;
+            public static final double IdlePosition = 0.75;
+            public static final double IntakePosition = 0.75;
             public static final double L1PrepPosition = 0;
-            public static final double A1PrepPosition = 0;
+            public static final double A1PrepPosition = 0.7;
             public static final double L2PrepPosition = 0;
             public static final double A2PrepPosition = 0;
             public static final double L3PrepPosition = 0;
-            public static final double L4PrepPosition = 0;
+            public static final double L4PrepPosition = .66;
 
             public static final double A1ReleasePosition = 0;
             public static final double A2ReleasePosition = 0;
@@ -143,8 +143,8 @@ public class Constants {
 
         public interface  Intake{
             public static final int MotorID = 17;
-            public static final double IntakeSpeed = 0;
-            public static final double IntakeTimeout = 0;
+            public static final double IntakeSpeed = 0.3;
+            public static final double IntakeTimeout = 10;
             public static final double HoldSpeed = 0;
             public static final int sensorPort = 1;
             public static final double ReleaseSpeed = 0;

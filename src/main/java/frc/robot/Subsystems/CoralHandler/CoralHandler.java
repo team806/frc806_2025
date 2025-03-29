@@ -44,31 +44,36 @@ public class CoralHandler extends SubsystemBase {
 
     public Command idle() {
         return parallel(
-            runOnce(() -> { position = ElevatorPosition.IDLE; intakeMotor.set(0) }),
+            runOnce(() -> { position = ElevatorPosition.IDLE; intakeMotor.set(0); }),
             arm.driveAngleToCommand(Constants.Elevator.Arm.IdlePosition),
-            elevator.liftToSlowlyCommand(Constants.Elevator.Lift.IdlePosition)
+            //elevator.liftToSlowlyCommand(Constants.Elevator.Lift.IdlePosition)
+            elevator.idleDrop()
         ).withName("Idle");
     }
 
     public Command intakeAndHold() {
-        return parallel(
-            runOnce(() -> intakeMotor.set(Constants.Elevator.Intake.IntakeSpeed)),
-            elevator.liftToQuicklyCommand(Constants.Elevator.Lift.IntakePosition),
-            arm.driveAngleToCommand(Constants.Elevator.Arm.IntakePosition)
-        ).until(() -> arm.isAtSetpoint() && elevator.isAtFastSetpoint())
+        return runOnce(() -> intakeMotor.set(Constants.Elevator.Intake.IntakeSpeed))
         .andThen(
             race(
                 waitSeconds(Constants.Elevator.Intake.IntakeTimeout),
-                waitUntil(() -> !coralSensor.get())
+                waitUntil(() -> !coralSensor.get()),
+                parallel(
+                    elevator.liftToQuicklyCommand(Constants.Elevator.Lift.IntakePosition),
+                    arm.driveAngleToCommand(Constants.Elevator.Arm.IntakePosition)
+                )
             )
-        ).withName("Intake")
-        .andThen(
-            either(
-                none().withName("Failed to intake"),
-                runOnce(() -> intakeMotor.set(Constants.Elevator.Intake.HoldSpeed)).withName("Holding coral"),
-                coralSensor::get
-            )
-        );
+        ).withName("Intake");
+        // .andThen(
+        //     parallel(
+        //         elevator.liftToQuicklyCommand(Constants.Elevator.Lift.IntakePosition),
+        //         arm.driveAngleToCommand(Constants.Elevator.Arm.IntakePosition),
+        //         either(
+        //             none().withName("Failed to intake"),
+        //             runOnce(() -> intakeMotor.set(Constants.Elevator.Intake.HoldSpeed)).withName("Holding coral"),
+        //             coralSensor::get
+        //         )
+        //     )
+        /*)*///.finallyDo(() -> { elevator.stopM(); arm.stop(); intakeMotor.set(0); });
     }
 
     public Command gotoL1() {
@@ -83,8 +88,9 @@ public class CoralHandler extends SubsystemBase {
         return parallel(
             elevator.liftToQuicklyCommand(Constants.Elevator.Lift.A1PrepPosition),
             arm.driveAngleToCommand(Constants.Elevator.Arm.A1PrepPosition)
-        ).until(() -> arm.isAtSetpoint() && elevator.isAtFastSetpoint())
-        .andThen(runOnce(() -> position = ElevatorPosition.A1)).withName("Going to A1");
+            //run(() -> System.out.println("Test"))
+        )//.until(() -> /*arm.isAtSetpoint() && */elevator.isAtFastSetpoint())
+        /*.andThen(runOnce(() -> position = ElevatorPosition.A1))*/.withName("Going to A1");
     }
 
     public Command gotoL2() {
@@ -113,12 +119,11 @@ public class CoralHandler extends SubsystemBase {
 
     public Command gotoL4() {
         return parallel(
-            elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L4FastPrepPosition)
-                .until(() -> elevator.isAtFastSetpoint())
-                .andThen(elevator.liftToSlowlyCommand(Constants.Elevator.Lift.L4PrepPosition)),
+            elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L4PrepPosition),
             arm.driveAngleToCommand(Constants.Elevator.Arm.L4PrepPosition)
-        ).until(() -> arm.isAtSetpoint() && elevator.isAtSlowSetpoint())
-        .andThen(runOnce(() -> position = ElevatorPosition.L4)).withName("Going to L4");
+        )/*.until(() -> arm.isAtSetpoint() && elevator.isAtFastSetpoint())
+        .andThen(runOnce(() -> position = ElevatorPosition.L4))*/
+        .withName("Going to L4");
     }
 
     public Command release() {

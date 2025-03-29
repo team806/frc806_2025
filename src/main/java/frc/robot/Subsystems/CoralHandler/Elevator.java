@@ -1,8 +1,8 @@
 package frc.robot.Subsystems.CoralHandler;
 
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -10,8 +10,6 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import static edu.wpi.first.wpilibj2.command.Commands.runEnd;
-
 import frc.robot.Constants;
 
 public class Elevator extends SubsystemBase {
@@ -47,11 +45,15 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command liftToQuicklyCommand(double setpoint) {
-        return run(() -> liftToQuickly(setpoint));
+        return run(() -> liftToQuickly(setpoint)).finallyDo(() -> liftMotor.set(0));
     }
 
     public Command liftToSlowlyCommand(double setpoint) {
         return run(() -> liftToSlowly(setpoint));
+    }
+
+    public Command stop() {
+        return runOnce(() -> liftMotor.set(0));
     }
 
     public Command manualUp() {
@@ -60,6 +62,14 @@ public class Elevator extends SubsystemBase {
 
     public Command manualDown() {
         return runEnd(() -> liftMotor.set(0), () -> liftMotor.set(-0.075));
+    }
+
+    public void stopM() {
+        liftMotor.set(0);
+    }
+
+    public Command idleDrop() {
+        return run(() -> liftMotor.set(0));
     }
 
     @Override

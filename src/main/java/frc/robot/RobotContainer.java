@@ -67,7 +67,7 @@ public class RobotContainer {
   // dpadr.whileTrue(elevator.manualOut());  
   // y.whileTrue(elevator.manualIntake());
   // a.whileTrue(elevator.manualShoot()); 
-  lt.whileTrue(elevator.gotoA1());
+  lt.whileTrue(elevator.gotoL4());
 
 
 

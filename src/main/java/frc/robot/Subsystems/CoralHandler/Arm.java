@@ -10,9 +10,6 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import static edu.wpi.first.wpilibj2.command.Commands.runEnd;
-import static edu.wpi.first.wpilibj2.command.Commands.run;
-
 import frc.robot.Constants;
 
 public class Arm extends SubsystemBase {
@@ -27,7 +24,7 @@ public class Arm extends SubsystemBase {
     }
 
     public void driveAngleTo(double setpoint) {
-        armMotor.set(MathUtil.clamp(angLimiter.calculate(armController.calculate(armEncoder.getPosition(), setpoint)), -1, 1));
+        armMotor.set(-MathUtil.clamp(angLimiter.calculate(armController.calculate(armEncoder.getPosition(), setpoint)), -1, 1));
     }
 
     public boolean isAtSetpoint() {
@@ -35,7 +32,7 @@ public class Arm extends SubsystemBase {
     }
 
     public Command driveAngleToCommand(double setpoint) {
-        return run(() -> driveAngleTo(setpoint));
+        return run(() -> driveAngleTo(setpoint)).finallyDo(() -> armMotor.set(0));
     }
 
     public Command manualOut() {
@@ -44,6 +41,10 @@ public class Arm extends SubsystemBase {
 
     public Command manualIn() {
         return runEnd(() -> armMotor.set(-0.2), () -> armMotor.set(-0.04));
+    }
+
+    public void stop() {
+        armMotor.set(0);
     }
 
     @Override
