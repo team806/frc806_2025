@@ -21,6 +21,8 @@ public class Arm extends SubsystemBase {
     public Arm(int armMotorId) {
         armMotor = new SparkFlex(armMotorId, MotorType.kBrushless);
         armEncoder = armMotor.getAbsoluteEncoder();
+
+        armController.setTolerance(0.025);
     }
 
     public void driveAngleTo(double setpoint) {

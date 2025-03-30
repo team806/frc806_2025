@@ -12,7 +12,6 @@ public class Constants {
         new Translation2d(0.29845,-0.29845),  //rear left   --
         new Translation2d(0.29845,0.29845)  //rear right  +-
     };
-    
     //velocity constranints for swerve desaturate
     public static final double DriveBaseRadius = 0.42207203769;
     public static final double attainableMaxModuleSpeedMPS = 4.572;
@@ -101,20 +100,20 @@ public class Constants {
 
         public interface Lift {
             public static final int MotorID = 15;
-            public static final double kFastP = 0.175;
-            public static final double kFastI = 0;
-            public static final double kFastD = 0.001;
+            public static final double kFastP = .16/2000;
+            public static final double kFastI = .065/2000;
+            public static final double kFastD = 0.0025/2000;
             public static final double kSlowP = 0.01;
             public static final double kSlowI = 0;
             public static final double kSlowD = 0;
 
             public static final double IdlePosition = 0;
             public static final double IntakePosition = 1.07;
-            public static final double L1PrepPosition = 0;
+            public static final double L1PrepPosition = 6;
             public static final double A1PrepPosition = 2;
-            public static final double L2PrepPosition = 0;
+            public static final double L2PrepPosition = 4850; // 7
             public static final double A2PrepPosition = 0;
-            public static final double L3PrepPosition = 0;
+            public static final double L3PrepPosition = 7;
             public static final double L4FastPrepPosition = 0;
             public static final double L4PrepPosition = 6.39;
             public static final double L4ReleasePosition = 0;
@@ -124,17 +123,17 @@ public class Constants {
 
         public static interface Arm {
             public static final int MotorID = 18;
-            public static final double kP = 2;
-            public static final double kI = 0.0;
+            public static final double kP = 1.75;
+            public static final double kI = 0;
             public static final double kD = 0.0;
 
-            public static final double IdlePosition = 0.75;
+            public static final double IdlePosition = 0.7;
             public static final double IntakePosition = 0.75;
-            public static final double L1PrepPosition = 0;
+            public static final double L1PrepPosition = 0.4;
             public static final double A1PrepPosition = 0.7;
-            public static final double L2PrepPosition = 0;
+            public static final double L2PrepPosition = .42; // .4
             public static final double A2PrepPosition = 0;
-            public static final double L3PrepPosition = 0;
+            public static final double L3PrepPosition = 0.4;
             public static final double L4PrepPosition = .66;
 
             public static final double A1ReleasePosition = 0;
@@ -147,9 +146,9 @@ public class Constants {
             public static final double IntakeTimeout = 10;
             public static final double HoldSpeed = 0;
             public static final int sensorPort = 1;
-            public static final double ReleaseSpeed = 0;
+            public static final double ReleaseSpeed = -0.3;
             public static final double AlgaeSpeed = 0;
-            public static final double ReleaseTime = 0;
+            public static final double ReleaseTime = 1;
         }
 
     

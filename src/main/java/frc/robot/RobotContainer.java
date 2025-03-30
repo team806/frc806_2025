@@ -9,8 +9,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Subsystems.Climber;
-import frc.robot.Subsystems.Processor;
 import frc.robot.Subsystems.CoralHandler.CoralHandler;
+import frc.robot.Subsystems.Processor;
 
 public class RobotContainer {
 
@@ -61,14 +61,24 @@ public class RobotContainer {
 
   private void configureBindings() {
 
+
+  /*
+   * dpadup.onTrue(elevator.gotoL4());
+   * dpaddn.onTrue(elevator.gotoL1());
+   * dpadl.onTrue(elevator.gotoL2());
+   * dpadr.onTrue(elevator.gotoL3());
+   * lsb.onTrue(elevator.release());
+   * rsb.onTrue(elevator.idle());
+   */
   // lt.whileTrue(elevator.manualUp());
   // rt.whileTrue(elevator.manualDown());
   // dpadl.whileTrue(elevator.manualIn());
   // dpadr.whileTrue(elevator.manualOut());  
   // y.whileTrue(elevator.manualIntake());
-  // a.whileTrue(elevator.manualShoot()); 
+  lsb.onTrue(elevator.release()); 
+  rsb.onTrue(elevator.idle());
   lt.whileTrue(elevator.gotoL4());
-
+  rt.onTrue(elevator.gotoL2());
 
 
   rb.whileTrue(processor.manualDown());
