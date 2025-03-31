@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Translation2d;
+import frc.robot.Subsystems.swerveModule;
 
 public class Constants {
 
@@ -41,6 +42,13 @@ public class Constants {
             public static final int RearRightDriveID   = 10, RearRightSteerID   = 11, RearRightEncoderID = 12;
             public static final double RearRightEncoderOffset = 0.131;//0.448730 rotations raw = 0.000244 rotations
             // public static final double RearRightEncoderOffset = 0;
+
+        swerveModule[] moduleArray = new swerveModule[] {
+            new swerveModule(FrontRightDriveID,FrontRightSteerID,FrontRightEncoderID,FrontRightEncoderOffset),
+            new swerveModule(FrontLeftDriveID, FrontLeftSteerID, FrontLeftEncoderID, FrontLeftEncoderOffset),
+            new swerveModule(RearLeftDriveID, RearLeftSteerID, RearLeftEncoderID, RearLeftEncoderOffset),
+            new swerveModule(RearRightDriveID, RearRightSteerID, RearRightEncoderID, RearRightEncoderOffset)
+        };
         
     }
                 //TODO not really a todo, but i had to name it this way or java got mad at me

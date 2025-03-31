@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.Utils;
 
 
 enum ProcessorState { 
@@ -35,12 +34,6 @@ public class Processor extends SubsystemBase {
     private final PIDController angController = new PIDController(3, 0, 0);
     private final SlewRateLimiter angLimiter = new SlewRateLimiter(2);
 
-
-
-
-    private boolean manualIntakeControl = false;
-    private final double intakeRotationSpeed = 0.2;
-    private double manualMovementSpeed = 0.0;
     private ProcessorState currentIntakeState;
     private ProcessorState desiredIntakeState;
     public Processor() {
@@ -58,25 +51,7 @@ public class Processor extends SubsystemBase {
         currentIntakeState = ProcessorState.STATE_UNKNOWN;
         desiredIntakeState = ProcessorState.STATE_RETRACTED;
 
-        angController.enableContinuousInput(0, 1);
-    }
-
-    private void UpdateState() {
-        double encoderAngle = angleEncoder.getPosition();
-        if (manualIntakeControl && manualMovementSpeed > 0){
-            currentIntakeState = ProcessorState.STATE_MOVING;
-            return;
-        }
-
-        if (Utils.IsDoubleApproximately(encoderAngle, Constants.Pconstants.retractedSetPoint, Constants.Delta)){
-            currentIntakeState = ProcessorState.STATE_RETRACTED;
-        } else if (Utils.IsDoubleApproximately(encoderAngle, Constants.Pconstants.ampSetPoint, 0.3)){
-            currentIntakeState = ProcessorState.STATE_AMP;
-        } else if (Utils.IsDoubleApproximately(encoderAngle, Constants.Pconstants.extendedSetPoint, Constants.Delta)){
-            currentIntakeState = ProcessorState.STATE_EXTENDED;
-        } else {
-            currentIntakeState = ProcessorState.STATE_MOVING;
-        }
+        angController.enableContinuousInput(-0.2, 0.2);
     }
 
     private double GetDesiredPosition(ProcessorState intakeState){
@@ -91,43 +66,32 @@ public class Processor extends SubsystemBase {
     }
 
     private void SetDesiredState(ProcessorState newDesiredIntakeState){
-        manualIntakeControl = false;
         desiredIntakeState = newDesiredIntakeState;
         angController.setSetpoint(GetDesiredPosition(desiredIntakeState));
     }
 
-    private void ManualUpdate(double speed){
-        manualIntakeControl = true;
-        manualMovementSpeed = speed;
-    }
-
-    // private void RunLoop(){
-    //     if (manualIntakeControl){
-    //         angleMotor.set(manualMovementSpeed);
-    //     } else {
-    //         if (currentIntakeState == desiredIntakeState){
-    //             angleMotor.set(0);
-    //         } else {
-    //             angleMotor.set(angLimiter.calculate(angController.calculate(angleEncoder.getPosition())));
-    //         }
-    //     }
-    //     UpdateState();
-    // }
-
     public Command extend(){
-        return this.run(()-> SetDesiredState(ProcessorState.STATE_EXTENDED));
+        return this.run(()-> SetDesiredState(ProcessorState.STATE_EXTENDED))
+                    .until(()-> angController.atSetpoint())
+                    .andThen(()-> currentIntakeState = ProcessorState.STATE_EXTENDED);
     }
 
     public Command transport(){
-        return this.run(()-> SetDesiredState(ProcessorState.STATE_TRANSPORT));
+        return this.run(()-> SetDesiredState(ProcessorState.STATE_TRANSPORT))
+                    .until(()->angController.atSetpoint())
+                    .andThen(()-> currentIntakeState = ProcessorState.STATE_TRANSPORT);
     }
 
     public Command store(){
-        return this.run(()-> SetDesiredState(ProcessorState.STATE_RETRACTED));
+        return this.run(()-> SetDesiredState(ProcessorState.STATE_RETRACTED))
+                    .until(()->angController.atSetpoint())
+                    .andThen(()-> currentIntakeState = ProcessorState.STATE_TRANSPORT);
     }
 
     public Command score(){
-        return this.run(()-> SetDesiredState(ProcessorState.STATE_AMP));
+        return this.run(()-> SetDesiredState(ProcessorState.STATE_AMP))
+                    .until(()->angController.atSetpoint())
+                    .andThen(()-> currentIntakeState = ProcessorState.STATE_TRANSPORT);
     }
 
     public Command intake(){

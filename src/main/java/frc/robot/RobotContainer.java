@@ -4,13 +4,20 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Commands.DriveFieldRelative;
 import frc.robot.Subsystems.Climber;
+import frc.robot.Subsystems.DrivetrainSubsystem;
 import frc.robot.Subsystems.CoralHandler.CoralHandler;
 import frc.robot.Subsystems.Processor;
+
+import frc.robot.Commands.DriveFieldRelative;
 
 public class RobotContainer {
 
@@ -20,11 +27,11 @@ public class RobotContainer {
   private final Climber climber = new Climber(Constants.Climber.MotorID);
   private final CoralHandler elevator = new CoralHandler(Constants.Elevator.Lift.MotorID,Constants.Elevator.Arm.MotorID,Constants.Elevator.Intake.MotorID,Constants.Elevator.Intake.sensorPort);
   private final Processor processor = new Processor();
+  private final DrivetrainSubsystem drivetrain = new DrivetrainSubsystem(Constants.Modules.moduleArray);
   SendableChooser<Command> m_chooser = new SendableChooser<>();
 
 
-  //CommandXboxController DriveController = new CommandXboxController(0);
-  //SmartDashboard
+  CommandXboxController DriveController = new CommandXboxController(0);
   CommandXboxController coDriveController = new CommandXboxController(1);
   //Trigger xButton = DriveController.x();  
   //Trigger yButton = DriveController.y();  
@@ -60,7 +67,7 @@ public class RobotContainer {
   }
 
   private void configureBindings() {
-
+  drivetrain.setDefaultCommand(new DriveFieldRelative(drivetrain, DriveController));
 
   /*
    * dpadup.onTrue(elevator.gotoL4());
@@ -107,6 +114,11 @@ public class RobotContainer {
 }
 
   public Command getAutonomousCommand() {
-    return m_chooser.getSelected();
+    //return m_chooser.getSelected();
+    return Commands.deadline(
+      waitSeconds(1.5),
+      Commands.run(() -> {  drivetrain.drive(new ChassisSpeeds(1, 0, 0)); })
+    )
+    .andThen(() -> { drivetrain.drive(new ChassisSpeeds(0, 0, 0)); });
   }
 }
