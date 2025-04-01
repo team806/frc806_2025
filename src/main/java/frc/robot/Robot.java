@@ -4,55 +4,25 @@
 
 package frc.robot;
 
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
+
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import frc.robot.Subsystems.Climber;
-import frc.robot.Subsystems.DrivetrainSubsystem;
-import frc.robot.Subsystems.Elevator;
-import frc.robot.Subsystems.Processor;
+
 
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
-  private RobotContainer m_robotContainer;     
-  
-  private final Climber climber = new Climber(Constants.Climber.MotorID);
-  private final Elevator elevator = new Elevator(Constants.Elevator.Lift.MotorID);
-
-  CommandXboxController driveController = new CommandXboxController(0);
-  XboxController coDriverController = new XboxController(1);
-
-  Processor processor;
-  double translationPow = Constants.Drivetrain.TranslationPow;
-  double rotationPow = Constants.Drivetrain.RotationPow;
-  
-  public Command taxi = Commands.runOnce(()->{
-    DrivetrainSubsystem.getInstance().driveFieldRelative(
-      new ChassisSpeeds(-2,0,0));}).andThen(
-        Commands.waitSeconds(4)).andThen(()->{
-          DrivetrainSubsystem.getInstance().driveFieldRelative(new ChassisSpeeds());});
+  private RobotContainer robotContainer;     
 
   @Override
   public void robotInit() {
-    m_robotContainer = new RobotContainer();
-
-    CameraServer.startAutomaticCapture();
-
-    processor = new Processor();
-    
+    robotContainer = new RobotContainer();
+    enableLiveWindowInTest(true);    
     // Initialize here to retrieve the details regarding the gyroscope.
     // Do not use to ensure that any changes to behavior of the subsystem are unobserved and do not
     // impact the driving and autonomous of the robot.
-    DrivetrainSubsystem.getInstance().resetGyro();
-
 
   }
 
@@ -72,8 +42,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    // m_autonomousCommand = taxi;
-    // m_robotContainer.getAutonomousCommand();
+    m_autonomousCommand = robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
@@ -91,14 +60,10 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-
-    
   }
 
   @Override
-  public void teleopPeriodic() {
-    driveRobot();
-  }
+  public void teleopPeriodic() {}
 
   @Override
   public void teleopExit() {}
@@ -110,39 +75,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void testPeriodic() {
-    translationPow = SmartDashboard.getNumber("translationPow", translationPow);
-    rotationPow = SmartDashboard.getNumber("translationPow", rotationPow);
-    driveRobot();
   }
 
   @Override
   public void testExit() {}
-
-
-  public void driveRobot() {
-    double x = driveController.getLeftX(), y = driveController.getLeftY(), theta = driveController.getRightX();
-    
-    if (Math.hypot(x, y) < Constants.controllerDeadband) {
-      x = 0;
-      y = 0;
-    }
-    if (Math.abs(theta) < Constants.controllerDeadband) {
-      theta = 0.0;
-    }
-
-    x = (x > 0) ? Math.abs(Math.pow(x, translationPow)) : -Math.abs(Math.pow(x, translationPow));
-    y = (y > 0) ? Math.abs(Math.pow(y, translationPow)) : -Math.abs(Math.pow(y, translationPow));
-    theta = (theta > 0) ? Math.abs(Math.pow(theta, rotationPow)) : -Math.abs(Math.pow(theta, rotationPow));
-
-    double slowModeFactor = (driveController.getLeftTriggerAxis() * Constants.Drivetrain.SlowFactor) + Constants.Drivetrain.SlowFactorOffset;
-
-    DrivetrainSubsystem.getInstance().driveFieldRelative(
-      new ChassisSpeeds(
-        (y * Constants.attainableMaxTranslationalSpeedMPS) / slowModeFactor, 
-        (x * Constants.attainableMaxTranslationalSpeedMPS) / slowModeFactor, 
-        (theta * Constants.attainableMaxRotationalVelocityRPS) / slowModeFactor
-      )
-    );
-  }
 
 }
