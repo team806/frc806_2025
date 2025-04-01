@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import static edu.wpi.first.wpilibj2.command.Commands.deadline;
+import static edu.wpi.first.wpilibj2.command.Commands.either;
 import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.race;
 import static edu.wpi.first.wpilibj2.command.Commands.select;
@@ -48,56 +49,37 @@ public final class CoralHandler extends SubsystemBase {
 
     public Command idle() {
         return parallel(
-            runOnce(() -> { intakeMotor.set(0); }),
-            arm.driveAngleToCommand(armIdlePosition),
-            // either(
-            //     elevator.idleDrop(),
-            //     elevator.liftToQuicklyCommand(elevatorIdlePosition),
-            //     () -> elevatorIdlePosition == Constants.Elevator.Lift.IdlePosition
-            // )
+            either(
+                race(
+                    waitSeconds(Constants.Elevator.Intake.IntakeTimeout),
+                    waitUntil(() -> !coralSensor.get())
+                ).andThen(runOnce(() -> intakeMotor.set(0))),
+                runOnce(() -> intakeMotor.set(0)),
+                () -> intakeMotor.get() == Constants.Elevator.Intake.IntakeSpeed
+            ),
+            arm.driveAngleToCommand(Constants.Elevator.Arm.IdlePosition),
             elevator.idleDrop()
         ).withName("Idle");
     }
 
-    // public Command reset() {
-    //     // return runOnce(() -> {
-    //     //     armIdlePosition = Constants.Elevator.Arm.IdlePosition;
-    //     //     elevatorIdlePosition = Constants.Elevator.Lift.IdlePosition;
-    //     // }).withName("Reset");
-    //     return none();
-    // }
-
     public Command intakeAndHold() {
-        return runOnce(() -> intakeMotor.set(Constants.Elevator.Intake.IntakeSpeed))
-        .andThen(
-            race(
-                waitSeconds(Constants.Elevator.Intake.IntakeTimeout),
-                waitUntil(() -> !coralSensor.get()),
-                parallel(
-                    elevator.liftToQuicklyCommand(Constants.Elevator.Lift.IntakePosition),
-                    arm.driveAngleToCommand(Constants.Elevator.Arm.IntakePosition)
-                )
-            )
+        return parallel(
+            elevator.liftToQuicklyCommand(Constants.Elevator.Lift.IntakePosition),
+            arm.driveAngleToCommand(Constants.Elevator.Arm.IntakePosition),
+            runOnce(() -> intakeMotor.set(Constants.Elevator.Intake.IntakeSpeed))
         ).withName("Intake");
-        // .andThen(
-        //     parallel(
-        //         elevator.liftToQuicklyCommand(Constants.Elevator.Lift.IntakePosition),
-        //         arm.driveAngleToCommand(Constants.Elevator.Arm.IntakePosition),
-        //         either(
-        //             none().withName("Failed to intake"),
-        //             runOnce(() -> intakeMotor.set(Constants.Elevator.Intake.HoldSpeed)).withName("Holding coral"),
-        //             coralSensor::get
-        //         )
-        //     )
-        /*)*///.finallyDo(() -> { elevator.stopM(); arm.stop(); intakeMotor.set(0); });
     }
 
     public Command gotoL1() {
         return parallel(
             elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L1PrepPosition),
-            arm.driveAngleToCommand(Constants.Elevator.Arm.L1PrepPosition)
-        ).until(() -> arm.isAtSetpoint() && elevator.isAtFastSetpoint())
-        .andThen(runOnce(() -> position = ElevatorPosition.L1)).withName("Going to L1");
+            arm.driveAngleToCommand(Constants.Elevator.Arm.L1PrepPosition),
+            run(() -> {
+                if (elevator.isAtFastSetpoint() && arm.isAtSetpoint()) {
+                    position = ElevatorPosition.L1;
+                }
+            })
+        ).withName("Going to L1");
     }
 
     public Command gotoA1() {
@@ -132,18 +114,25 @@ public final class CoralHandler extends SubsystemBase {
     public Command gotoL3() {
         return parallel(
             elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L3PrepPosition),
-            arm.driveAngleToCommand(Constants.Elevator.Arm.L3PrepPosition)
-        ).until(() -> arm.isAtSetpoint() && elevator.isAtFastSetpoint())
-        .andThen(runOnce(() -> position = ElevatorPosition.L3)).withName("Going to L3");
+            arm.driveAngleToCommand(Constants.Elevator.Arm.L3PrepPosition),
+            run(() -> {
+                if (elevator.isAtFastSetpoint() && arm.isAtSetpoint()) {
+                    position = ElevatorPosition.L3;
+                }
+            })
+        ).withName("Going to L3");
     }
 
     public Command gotoL4() {
         return parallel(
             elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L4PrepPosition),
-            arm.driveAngleToCommand(Constants.Elevator.Arm.L4PrepPosition)
-        )/*.until(() -> arm.isAtSetpoint() && elevator.isAtFastSetpoint())
-        .andThen(runOnce(() -> position = ElevatorPosition.L4))*/
-        .withName("Going to L4");
+            arm.driveAngleToCommand(Constants.Elevator.Arm.L4PrepPosition),
+            run(() -> {
+                if (elevator.isAtFastSetpoint() && arm.isAtSetpoint()) {
+                    position = ElevatorPosition.L4;
+                }
+            })
+        ).withName("Going to L4");
     }
 
     public Command release() {
@@ -160,9 +149,20 @@ public final class CoralHandler extends SubsystemBase {
     }
 
     public Command releaseL1() {
-        return runOnce(() -> intakeMotor.set(Constants.Elevator.Intake.ReleaseSpeed))
-        .andThen(waitSeconds(Constants.Elevator.Intake.ReleaseTime))
-        .andThen(runOnce(() -> intakeMotor.set(0))).withName("Releasing L1");
+        return deadline(
+            waitSeconds(Constants.Elevator.Intake.ReleaseTime),
+            elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L1PrepPosition),
+            arm.driveAngleToCommand(Constants.Elevator.Arm.L1PrepPosition),
+            runOnce(() -> {
+                intakeMotor.set(Constants.Elevator.Intake.ReleaseSpeed);
+                elevatorIdlePosition = Constants.Elevator.Lift.L1PrepPosition;
+                armIdlePosition = Constants.Elevator.Arm.L1PrepPosition;
+            })
+        ).withName("Releasing").andThen(parallel(
+            runOnce(() -> intakeMotor.set(0)),
+            elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L1PrepPosition),
+            arm.driveAngleToCommand(Constants.Elevator.Arm.L1PrepPosition)
+        )).withName("Holding at L1");
     }
 
     public Command releaseA1() {
@@ -173,9 +173,6 @@ public final class CoralHandler extends SubsystemBase {
     }
 
     public Command releaseL2() {
-        // return runOnce(() -> intakeMotor.set(Constants.Elevator.Intake.ReleaseSpeed))
-        // .andThen(waitSeconds(Constants.Elevator.Intake.ReleaseTime))
-        // .andThen(runOnce(() -> intakeMotor.set(0))).withName("Releasing L2");
         return deadline(
             waitSeconds(Constants.Elevator.Intake.ReleaseTime),
             elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L2PrepPosition),
@@ -200,17 +197,37 @@ public final class CoralHandler extends SubsystemBase {
     }
 
     public Command releaseL3() {
-        return runOnce(() -> intakeMotor.set(Constants.Elevator.Intake.ReleaseSpeed))
-        .andThen(waitSeconds(Constants.Elevator.Intake.ReleaseTime))
-        .andThen(runOnce(() -> intakeMotor.set(0))).withName("Releasing L3");
+        return deadline(
+            waitSeconds(Constants.Elevator.Intake.ReleaseTime),
+            elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L3PrepPosition),
+            arm.driveAngleToCommand(Constants.Elevator.Arm.L3PrepPosition),
+            runOnce(() -> {
+                intakeMotor.set(Constants.Elevator.Intake.ReleaseSpeed);
+                elevatorIdlePosition = Constants.Elevator.Lift.L3PrepPosition;
+                armIdlePosition = Constants.Elevator.Arm.L3PrepPosition;
+            })
+        ).withName("Releasing").andThen(parallel(
+            runOnce(() -> intakeMotor.set(0)),
+            elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L3PrepPosition),
+            arm.driveAngleToCommand(Constants.Elevator.Arm.L3PrepPosition)
+        )).withName("Holding at L3");
     }
 
     public Command releaseL4() {
-        return parallel(
-            runOnce(() -> intakeMotor.set(Constants.Elevator.Intake.ReleaseSpeed)),
-            elevator.liftToSlowlyCommand(Constants.Elevator.Lift.L4ReleasePosition)
-        ).until(() -> elevator.isAtSlowSetpoint())
-        .andThen(runOnce(() -> intakeMotor.set(0))).withName("Releasing L4");
+        return deadline(
+            waitSeconds(Constants.Elevator.Intake.ReleaseTime),
+            elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L4PrepPosition),
+            arm.driveAngleToCommand(Constants.Elevator.Arm.L4PrepPosition),
+            runOnce(() -> {
+                intakeMotor.set(Constants.Elevator.Intake.ReleaseSpeed);
+                elevatorIdlePosition = Constants.Elevator.Lift.L4PrepPosition;
+                armIdlePosition = Constants.Elevator.Arm.L4PrepPosition;
+            })
+        ).withName("Releasing").andThen(parallel(
+            runOnce(() -> intakeMotor.set(0)),
+            elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L4PrepPosition),
+            arm.driveAngleToCommand(Constants.Elevator.Arm.L4PrepPosition)
+        )).withName("Holding at L4");
     }
 
     public Command manualUp() {
