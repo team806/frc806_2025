@@ -63,16 +63,12 @@ public class Constants {
         public static final double ControllerTolerance = 1;//degrees 
         public static final double ControllerKP = 0.02, ControllerKI = 0, ControllerKD = 0;
 
-        public static final double DistanceSensorThreshold = 0;
+        //public static final double DistanceSensorThreshold = 0;
 
-        public static final double ampAng = 25;
-        public static final double speakerAng = 0;
-        public static final double ExtendedAngle = 50;
-        public static final double EncoderOffset = 0;
-
-        public static final double retractedSetPoint = 0.01318359375;
-        public static final double ampSetPoint = -0.5;
-        public static final double extendedSetPoint = -1.103515625;
+        public static final double scoreAng = 25;
+        public static final double ExtendedAngle = 0.78;
+        public static final double retractedAngle = 0.95;
+        public static final double transportAngle = 0.9;
         public static int angID = 13;
         public static int intakeID = 14;
         public static int algaeSensorPort = 0;
@@ -111,19 +107,19 @@ public class Constants {
             public static final double kFastP = .16/2000;
             public static final double kFastI = .065/2000;
             public static final double kFastD = 0.0025/2000;
-            public static final double kSlowP = 0.01;
-            public static final double kSlowI = 0;
-            public static final double kSlowD = 0;
+            public static final double kSlowP = .16/2000;
+            public static final double kSlowI = 0.655/2000;
+            public static final double kSlowD = 0.003/2000;
 
             public static final double IdlePosition = 0;
-            public static final double IntakePosition = 1.07;
-            public static final double L1PrepPosition = 6;
+            public static final double IntakePosition = 650;
+            public static final double L1PrepPosition = 2850;
             public static final double A1PrepPosition = 2;
             public static final double L2PrepPosition = 4850; // 7
             public static final double A2PrepPosition = 0;
-            public static final double L3PrepPosition = 7;
+            public static final double L3PrepPosition = 6850;
             public static final double L4FastPrepPosition = 0;
-            public static final double L4PrepPosition = 6.39;
+            public static final double L4PrepPosition = 7130;
             public static final double L4ReleasePosition = 0;
             
         }
@@ -136,13 +132,13 @@ public class Constants {
             public static final double kD = 0.0;
 
             public static final double IdlePosition = 0.7;
-            public static final double IntakePosition = 0.75;
+            public static final double IntakePosition = 0.74;
             public static final double L1PrepPosition = 0.4;
             public static final double A1PrepPosition = 0.7;
             public static final double L2PrepPosition = .42; // .4
             public static final double A2PrepPosition = 0;
-            public static final double L3PrepPosition = 0.4;
-            public static final double L4PrepPosition = .66;
+            public static final double L3PrepPosition = 0.43;
+            public static final double L4PrepPosition = .65;
 
             public static final double A1ReleasePosition = 0;
             public static final double A2ReleasePosition = 0;

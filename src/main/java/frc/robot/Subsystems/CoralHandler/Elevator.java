@@ -15,6 +15,8 @@ import frc.robot.Constants;
 
 public class Elevator extends SubsystemBase {
     private final SparkMax liftMotor;
+    //private final SparkMaxConfig liftConfig;
+
     //private final RelativeEncoder liftEncoder;
     private final Encoder liftEncoder;
     private final PIDController fastLiftController = new PIDController(Constants.Elevator.Lift.kFastP, Constants.Elevator.Lift.kFastI, Constants.Elevator.Lift.kFastD);
@@ -23,6 +25,9 @@ public class Elevator extends SubsystemBase {
 
     public Elevator(int liftMotorId) {
         liftMotor = new SparkMax(liftMotorId, MotorType.kBrushless);
+        //liftConfig = new SparkMaxConfig();
+        //liftConfig.openLoopRampRate(1);
+        //liftMotor.configure(liftConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         //liftEncoder = liftMotor.getAlternateEncoder();
         liftEncoder = new Encoder(3, 4);
         liftEncoder.setReverseDirection(true);

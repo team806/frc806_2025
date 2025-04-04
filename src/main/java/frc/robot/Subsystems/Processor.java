@@ -37,6 +37,7 @@ public class Processor extends SubsystemBase {
     private ProcessorState currentIntakeState;
     private ProcessorState desiredIntakeState;
     public Processor() {
+        
         angleMotor = new SparkFlex(Constants.Pconstants.angID, MotorType.kBrushless);
         angleMotorConfig = new SparkFlexConfig();
             angleMotorConfig.softLimit.forwardSoftLimitEnabled(false);
@@ -56,13 +57,13 @@ public class Processor extends SubsystemBase {
 
     private double GetDesiredPosition(ProcessorState intakeState){
         if (intakeState == ProcessorState.STATE_RETRACTED){
-            return Constants.Pconstants.retractedSetPoint;
+            return Constants.Pconstants.retractedAngle;
         } else if (intakeState == ProcessorState.STATE_AMP){
-            return Constants.Pconstants.ampSetPoint;
+            return Constants.Pconstants.scoreAng;
         } else if (intakeState == ProcessorState.STATE_EXTENDED){
-            return Constants.Pconstants.extendedSetPoint;
+            return Constants.Pconstants.ExtendedAngle;
         }
-        return Constants.Pconstants.retractedSetPoint;
+        return Constants.Pconstants.retractedAngle;
     }
 
     private void SetDesiredState(ProcessorState newDesiredIntakeState){

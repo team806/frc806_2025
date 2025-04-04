@@ -14,12 +14,17 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
-  private RobotContainer robotContainer;     
+  private RobotContainer m_robotContainer;     
 
   @Override
   public void robotInit() {
-    robotContainer = new RobotContainer();
-    enableLiveWindowInTest(true);    
+    enableLiveWindowInTest(true);
+    m_robotContainer = new RobotContainer();
+
+    //CameraServer.startAutomaticCapture();
+
+    //processor = new Processor();
+    
     // Initialize here to retrieve the details regarding the gyroscope.
     // Do not use to ensure that any changes to behavior of the subsystem are unobserved and do not
     // impact the driving and autonomous of the robot.
@@ -42,7 +47,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = robotContainer.getAutonomousCommand();
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();

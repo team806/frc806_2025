@@ -26,6 +26,7 @@ public final class CoralHandler extends SubsystemBase {
 
     private enum ElevatorPosition {
         IDLE,
+        INTAKE,
         L1,
         A1,
         L2,
