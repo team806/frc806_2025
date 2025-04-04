@@ -13,11 +13,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Commands.DriveFieldRelative;
 import frc.robot.Subsystems.Climber;
-import frc.robot.Subsystems.DrivetrainSubsystem;
 import frc.robot.Subsystems.CoralHandler.CoralHandler;
+import frc.robot.Subsystems.DrivetrainSubsystem;
 import frc.robot.Subsystems.Processor;
-
-import frc.robot.Commands.DriveFieldRelative;
 
 public class RobotContainer {
 
@@ -33,7 +31,8 @@ public class RobotContainer {
 
   CommandXboxController DriveController = new CommandXboxController(0);
   CommandXboxController coDriveController = new CommandXboxController(1);
-  //Trigger xButton = DriveController.x();  
+  CommandXboxController ohShitController = new CommandXboxController(2);
+   //Trigger xButton = DriveController.x();  
   //Trigger yButton = DriveController.y();  
   //Trigger bButton = DriveController.b();  
   //Trigger ltrigger = DriveController.leftTrigger();
@@ -41,6 +40,8 @@ public class RobotContainer {
   //Trigger noteAquired = new Trigger(IntakeSubsystem.getInstance()::getHasNote);
   //Trigger dPadUp = DriveController.povUp();
   //Trigger dPadDown = DriveController.povDown();
+  Trigger DriverDpadUp = DriveController.povUp();
+  Trigger DriverDpadDn = DriveController.povDown();
   Trigger dpadup = coDriveController.povUp();
   Trigger dpaddn = coDriveController.povDown();
   Trigger dpadr = coDriveController.povRight();
@@ -55,7 +56,12 @@ public class RobotContainer {
   Trigger rb = coDriveController.rightBumper();
   Trigger rt = coDriveController.rightTrigger();
   Trigger lt = coDriveController.leftTrigger();
-
+  Trigger manualUp = ohShitController.leftTrigger();
+  Trigger manualDn = ohShitController.rightTrigger();
+  Trigger manualDpadLeft = ohShitController.povLeft();
+  Trigger manualDpadRight = ohShitController.povRight();
+  Trigger manualRSB = ohShitController.rightStick();
+  Trigger manualLSB = ohShitController.leftStick();
   public RobotContainer() {
 
     //robot = new_robot;
@@ -68,35 +74,29 @@ public class RobotContainer {
 
   private void configureBindings() {
   drivetrain.setDefaultCommand(new DriveFieldRelative(drivetrain, DriveController));
+  
+  manualUp.whileTrue(elevator.manualUp());
+  manualDn.whileTrue(elevator.manualDown());
+  manualDpadRight.whileTrue(elevator.manualIn());
+  manualDpadLeft.whileTrue(elevator.manualOut());  
+  manualRSB.whileTrue(elevator.manualIntake());
+  manualLSB.whileTrue(elevator.manualShoot());
 
-  /*
-   * dpadup.onTrue(elevator.gotoL4());
-   * dpaddn.onTrue(elevator.gotoL1());
-   * dpadl.onTrue(elevator.gotoL2());
-   * dpadr.onTrue(elevator.gotoL3());
-   * lsb.onTrue(elevator.release());
-   * rsb.onTrue(elevator.idle());
-   */
-  // lt.whileTrue(elevator.manualUp());
-  // rt.whileTrue(elevator.manualDown());
-  // dpadl.whileTrue(elevator.manualIn());
-  // dpadr.whileTrue(elevator.manualOut());  
-  // y.whileTrue(elevator.manualIntake());
-  lsb.onTrue(elevator.release()); 
+
+  dpadup.onTrue(elevator.gotoL4());
+  dpaddn.onTrue(elevator.gotoL1());
+  dpadl.onTrue(elevator.gotoL2());
+  dpadr.onTrue(elevator.gotoL3());
+  lsb.onTrue(elevator.release());
   rsb.onTrue(elevator.idle());
-  lt.whileTrue(elevator.gotoL4());
-  rt.onTrue(elevator.gotoL2());
-
-
   rb.whileTrue(processor.manualDown());
   lb.whileTrue(processor.manualUp());
   x.whileTrue(processor.manualIn());
   b.whileTrue(processor.manualOut());
-    //y.onTrue(processor.autointake());
-    ////a.onTrue(processor.autoshoot());
-    //x.onTrue(processor.store());
-    dpadup.whileTrue(climber.climbCommand());
-    dpaddn.whileTrue(climber.releaseCommand());
+
+
+  DriverDpadUp.whileTrue(climber.climbCommand());
+  DriverDpadDn.whileTrue(climber.releaseCommand());
 
     //xButton.onTrue(new IntakeSetAng(IntakeAng.Speaker));
     //yButton.onTrue(new IntakeSetAng(IntakeAng.Amp));
