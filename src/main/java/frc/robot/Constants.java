@@ -131,7 +131,7 @@ public class Constants {
             public static final double kI = 0;
             public static final double kD = 0.0;
 
-            public static final double IdlePosition = 0.7;
+            public static final double IdlePosition = 0.74;
             public static final double IntakePosition = 0.74;
             public static final double L1PrepPosition = 0.4;
             public static final double A1PrepPosition = 0.7;
@@ -147,7 +147,7 @@ public class Constants {
         public interface  Intake{
             public static final int MotorID = 17;
             public static final double IntakeSpeed = 0.3;
-            public static final double IntakeTimeout = 10;
+            public static final double IntakeTimeout = 5;
             public static final double HoldSpeed = 0;
             public static final int sensorPort = 1;
             public static final double ReleaseSpeed = -0.3;

@@ -25,6 +25,11 @@ public class DriveFieldRelative extends Command {
   }
 
   @Override
+  public String getName() {
+    return "DriveFieldRelative";
+  }
+
+  @Override
   public void execute() {
      if(controller.start().getAsBoolean()){
       swerve.resetGyro();

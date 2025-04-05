@@ -38,11 +38,11 @@ public class Arm extends SubsystemBase {
     }
 
     public Command manualOut() {
-        return runEnd(() -> armMotor.set(0.2), () -> armMotor.set(-0.04));
+        return runEnd(() -> armMotor.set(0.2), () -> armMotor.set(-0.04)).withName("manaulOut");
     }
 
     public Command manualIn() {
-        return runEnd(() -> armMotor.set(-0.2), () -> armMotor.set(-0.04));
+        return runEnd(() -> armMotor.set(-0.2), () -> armMotor.set(-0.04)).withName("manualIn");
     }
 
     public void stop() {
@@ -52,5 +52,8 @@ public class Arm extends SubsystemBase {
     @Override
     public void periodic() {
         SmartDashboard.putNumber("arm sensor", armEncoder.getPosition());
+        SmartDashboard.putString("arm command",
+            getCurrentCommand() != null ?
+                getCurrentCommand().getName() : "");
     }
 }

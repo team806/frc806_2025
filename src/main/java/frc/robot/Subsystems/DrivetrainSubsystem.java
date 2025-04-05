@@ -12,6 +12,9 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
 import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
+import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -110,4 +113,13 @@ public class DrivetrainSubsystem extends SubsystemBase{
                 modules[3].getSwerveModuleState()
             });
         }
+        
+        public Command getAutonomousCommand() {
+            //return m_chooser.getSelected();
+            return Commands.deadline(
+              waitSeconds(1.5),
+              Commands.run(() -> {  drive(new ChassisSpeeds(3, 0, 0)); })
+            )
+            .andThen(() -> { drive(new ChassisSpeeds(0, 0, 0)); }).withName("Auton");
+          }
 }

@@ -45,7 +45,6 @@ public final class CoralHandler extends SubsystemBase {
         arm = new Arm(armMotorId);
         intakeMotor = new SparkMax(intakeMotorId, MotorType.kBrushless);
         coralSensor = new DigitalInput(coralSensorId);
-        setDefaultCommand(idle());
     }
 
     public Command idle() {
@@ -76,6 +75,7 @@ public final class CoralHandler extends SubsystemBase {
             elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L1PrepPosition),
             arm.driveAngleToCommand(Constants.Elevator.Arm.L1PrepPosition),
             run(() -> {
+                intakeMotor.set(0);
                 if (elevator.isAtFastSetpoint() && arm.isAtSetpoint()) {
                     position = ElevatorPosition.L1;
                 }
@@ -97,6 +97,7 @@ public final class CoralHandler extends SubsystemBase {
             elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L2PrepPosition),
             arm.driveAngleToCommand(Constants.Elevator.Arm.L2PrepPosition),
             run(() -> {
+                intakeMotor.set(0);
                 if (elevator.isAtFastSetpoint() && arm.isAtSetpoint()) {
                     position = ElevatorPosition.L2;
                 }
@@ -117,6 +118,7 @@ public final class CoralHandler extends SubsystemBase {
             elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L3PrepPosition),
             arm.driveAngleToCommand(Constants.Elevator.Arm.L3PrepPosition),
             run(() -> {
+                intakeMotor.set(0);
                 if (elevator.isAtFastSetpoint() && arm.isAtSetpoint()) {
                     position = ElevatorPosition.L3;
                 }
@@ -129,6 +131,7 @@ public final class CoralHandler extends SubsystemBase {
             elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L4PrepPosition),
             arm.driveAngleToCommand(Constants.Elevator.Arm.L4PrepPosition),
             run(() -> {
+                intakeMotor.set(0);
                 if (elevator.isAtFastSetpoint() && arm.isAtSetpoint()) {
                     position = ElevatorPosition.L4;
                 }
