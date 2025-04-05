@@ -223,7 +223,7 @@ public final class CoralHandler extends SubsystemBase {
             elevator.liftToQuicklyCommand(Constants.Elevator.Lift.L4PrepPosition),
             arm.driveAngleToCommand(Constants.Elevator.Arm.L4PrepPosition),
             runOnce(() -> {
-                intakeMotor.set(Constants.Elevator.Intake.ReleaseSpeed);
+                intakeMotor.set(Constants.Elevator.Intake.SlowReleaseSpeed);
                 elevatorIdlePosition = Constants.Elevator.Lift.L4PrepPosition;
                 armIdlePosition = Constants.Elevator.Arm.L4PrepPosition;
             })
@@ -256,6 +256,11 @@ public final class CoralHandler extends SubsystemBase {
 
     public Command manualShoot(){
         return this.runEnd(()->intakeMotor.set(-0.5),
+                        ()->intakeMotor.set(0));
+    }
+
+    public Command manualSlowShoot() {
+        return this.runEnd(()->intakeMotor.set(-0.15),
                         ()->intakeMotor.set(0));
     }
 

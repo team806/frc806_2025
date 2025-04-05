@@ -151,6 +151,7 @@ public class Constants {
             public static final double HoldSpeed = 0;
             public static final int sensorPort = 1;
             public static final double ReleaseSpeed = -0.3;
+            public static final double SlowReleaseSpeed = -0.1;
             public static final double AlgaeSpeed = 0;
             public static final double ReleaseTime = 1;
         }

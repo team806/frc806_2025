@@ -58,6 +58,7 @@ public class RobotContainer {
   Trigger manualDpadRight = ohShitController.povRight();
   Trigger manualY = ohShitController.y();
   Trigger manualA = ohShitController.a();
+  Trigger manualX = ohShitController.x();
   public RobotContainer() {
 
     //robot = new_robot;
@@ -77,6 +78,7 @@ public class RobotContainer {
   manualDpadLeft.whileTrue(elevator.manualIn());  
   manualY.whileTrue(elevator.manualIntake());
   manualA.whileTrue(elevator.manualShoot());
+  manualX.whileTrue(elevator.manualSlowShoot());
 
   rt.whileTrue(elevator.intakeAndHold());
   rt.onFalse(elevator.idle());
