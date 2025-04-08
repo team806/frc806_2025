@@ -1,20 +1,14 @@
 package frc.robot.Subsystems;
 
 
-import com.ctre.phoenix6.hardware.Pigeon2;
-
 import edu.wpi.first.math.filter.SlewRateLimiter;
-
-//import com.ctre.phoenix6.hardware.Pigeon2;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
-import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.ADIS16470_IMU;
+import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -22,7 +16,7 @@ public class DrivetrainSubsystem extends SubsystemBase{
 
     ////
         ADIS16470_IMU IMU;
-        Pigeon2 pigeon;
+        //Pigeon2 IMU;
         public swerveModule[] modules;
         SwerveDriveKinematics kinematics;
         //SwerveDriveOdometry odometry;
@@ -35,7 +29,7 @@ public class DrivetrainSubsystem extends SubsystemBase{
     //CONSTRUCTOR//
         public DrivetrainSubsystem(swerveModule... modules) {
             IMU = new ADIS16470_IMU();
-            //pigeon = new Pigeon2(Constants.PigeonID,"Default Name");
+            //IMU = new Pigeon2(Constants.PigeonID,"Default Name");
             this.modules = modules;
             kinematics = new SwerveDriveKinematics(Constants.moduleLocations);
         }
@@ -49,20 +43,25 @@ public class DrivetrainSubsystem extends SubsystemBase{
         public static DrivetrainSubsystem getInstance() {return instance;}
     //GYRO//
         public Rotation2d getGyroscopeRotation() {
-            return Rotation2d.fromDegrees(IMU.getAngle());
-            //return Rotation2d.fromDegrees(pigeon.getRoll().getValueAsDouble());
+            //return Rotation2d.fromDegrees(IMU.get());
+        
+            return Rotation2d.fromDegrees(-IMU.getAngle(IMUAxis.kY));
+            // r*eturn Rotation2d.fromDegrees(IMU.getAngle());
         }
         
 
 
-        public void calibrateGyro(){
-            IMU.calibrate();
-            //pigeon.
-        }
+     public void calibrateGyro(){
+            IMU.calibrate();   
+     }
+            
+        //    IMU.calibrate,
+        
+        //}
 
         public void resetGyro(){
             IMU.reset();
-            //pigeon.
+            
         }
     //DRIVING//
         public void drive(ChassisSpeeds  chassisSpeeds){
@@ -75,6 +74,7 @@ public class DrivetrainSubsystem extends SubsystemBase{
             chassisSpeeds.omegaRadiansPerSecond = rotationLimiter.calculate(chassisSpeeds.omegaRadiansPerSecond);
 
 
+            setModuleTargetStates(ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroscopeRotation()));
             setModuleTargetStates(ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, getGyroscopeRotation()));
         }
 
