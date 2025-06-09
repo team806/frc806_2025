@@ -104,7 +104,7 @@ public class Constants {
 
         public interface Lift {
             public static final int MotorID = 15;
-            public static final double kFastP = .16/2000;
+            public static final double kFastP = .08/2000;
             public static final double kFastI = .065/2000;
             public static final double kFastD = 0.0025/2000;
             public static final double kSlowP = .16/2000;
@@ -127,7 +127,7 @@ public class Constants {
 
         public static interface Arm {
             public static final int MotorID = 18;
-            public static final double kP = 1.75;
+            public static final double kP = 1.75*2/3;
             public static final double kI = 0;
             public static final double kD = 0.0;
 

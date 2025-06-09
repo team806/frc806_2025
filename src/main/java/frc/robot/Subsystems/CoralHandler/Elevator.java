@@ -74,7 +74,7 @@ public class Elevator extends SubsystemBase {
     }
 
     public Command manualUp() {
-        return runEnd(() -> liftMotor.set(-0.2), () -> liftMotor.set(-0.075));
+        return runEnd(() -> liftMotor.set(-0.3), () -> liftMotor.set(-0.075));
     }
 
     public Command manualDown() {

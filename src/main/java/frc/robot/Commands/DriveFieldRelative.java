@@ -51,13 +51,15 @@ public class DriveFieldRelative extends Command {
     theta = (theta > 0) ? Math.abs(Math.pow(theta, rotationPow)) : -Math.abs(Math.pow(theta, rotationPow));
 
     double slowModeFactor = (controller.getLeftTriggerAxis() * Constants.Drivetrain.SlowFactor) + Constants.Drivetrain.SlowFactorOffset;
+    boolean isCosineCompensated = controller.getRightTriggerAxis() >= 0.5;
 
     swerve.driveFieldRelative(
       new ChassisSpeeds(
         (y * Constants.attainableMaxTranslationalSpeedMPS) / slowModeFactor, 
         (x * Constants.attainableMaxTranslationalSpeedMPS) / slowModeFactor, 
         -(theta * Constants.attainableMaxRotationalVelocityRPS) / slowModeFactor
-      )
+      ),
+      isCosineCompensated
     );
   }
 }
