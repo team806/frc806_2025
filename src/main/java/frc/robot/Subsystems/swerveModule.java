@@ -18,7 +18,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -97,13 +96,24 @@ public class swerveModule extends SubsystemBase{
     //FEEDBACK//
         public Command calibrate() {
             return runOnce(() -> {
+                SparkMaxConfig brakeConfig = new SparkMaxConfig();
+                brakeConfig.smartCurrentLimit(40);
+                brakeConfig.idleMode(IdleMode.kBrake);
+                steerMotor.configure(brakeConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+
                 var encoderValue = moduleEncoder.getAbsolutePosition().getValueAsDouble();
-                Preferences.initDouble(EncoderPreferenceKey + encoderID, encoderValue);
+                Preferences.setDouble(EncoderPreferenceKey + encoderID, encoderValue);
             }).withName("Calibrate");
         }
 
         public Command prepareToCalibrate() {
-            return run(() -> steerMotor.set(0)).withName("Prepare to calibrate");
+            return runOnce(() -> {
+                SparkMaxConfig idleConfig = new SparkMaxConfig();
+                idleConfig.smartCurrentLimit(40);
+                idleConfig.idleMode(IdleMode.kCoast);
+                steerMotor.configure(idleConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+                steerMotor.set(0);
+            }).withName("Prepare to calibrate");
         }
 
         public void periodic() {

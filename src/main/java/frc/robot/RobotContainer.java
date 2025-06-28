@@ -38,6 +38,8 @@ public class RobotContainer {
   //Trigger dPadDown = DriveController.povDown();
   Trigger DriverDpadUp = DriveController.povUp();
   Trigger DriverDpadDn = DriveController.povDown();
+  Trigger DriverX = DriveController.x();
+  Trigger DriverY = DriveController.y();
   Trigger dpadup = coDriveController.povUp();
   Trigger dpaddn = coDriveController.povDown();
   Trigger dpadr = coDriveController.povRight();
@@ -71,6 +73,9 @@ public class RobotContainer {
 
   private void configureBindings() {
   //drivetrain.setDefaultCommand(new DriveFieldRelative(drivetrain, DriveController));
+
+  DriverX.onTrue(drivetrain.prepareToCalibrate());
+  DriverY.onTrue(drivetrain.calibrate());
   
   manualUp.whileTrue(elevator.manualUp());
   manualDn.whileTrue(elevator.manualDown());
