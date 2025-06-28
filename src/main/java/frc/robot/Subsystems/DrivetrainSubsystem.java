@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.ADIS16470_IMU.IMUAxis;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import static edu.wpi.first.wpilibj2.command.Commands.parallel;
 import static edu.wpi.first.wpilibj2.command.Commands.waitSeconds;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -43,6 +44,7 @@ public class DrivetrainSubsystem extends SubsystemBase{
             odometry = new SwerveDriveOdometry(kinematics, getGyroscopeRotation(), getModulePositions());
             statePublisher = NetworkTableInstance.getDefault().getStructArrayTopic("SwerveModules", SwerveModuleState.struct).publish();
         }
+
     //GYRO//
         public Rotation2d getGyroscopeRotation() {
             //return Rotation2d.fromDegrees(IMU.get());
@@ -66,6 +68,24 @@ public class DrivetrainSubsystem extends SubsystemBase{
             
         }
     //DRIVING//
+        public Command calibrate() {
+            return parallel(
+                modules[0].calibrate(),
+                modules[1].calibrate(),
+                modules[2].calibrate(),
+                modules[3].calibrate()
+            ).withName("Calibrate");
+        }
+
+        public Command prepareToCalibrate() {
+            return parallel(
+                modules[0].prepareToCalibrate(),
+                modules[1].prepareToCalibrate(),
+                modules[2].prepareToCalibrate(),
+                modules[3].prepareToCalibrate()
+            ).withName("Prepare to calibrate");
+        }
+
         public void drive(ChassisSpeeds  chassisSpeeds){
             setModuleTargetStates(chassisSpeeds, true);
         }

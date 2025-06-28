@@ -15,7 +15,9 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -24,6 +26,7 @@ public class swerveModule extends SubsystemBase{
     //drive 
     SparkMax driveMotor;
     int driveMotorID;
+    int encoderID;
     SparkAbsoluteEncoder driveMotorEncoder;
     SparkClosedLoopController  driveController;
     //steer
@@ -32,7 +35,7 @@ public class swerveModule extends SubsystemBase{
     PIDController steerController;
     //module encoder 
     CANcoder moduleEncoder;
-    double encoderOffsetRotations;
+    private static final String EncoderPreferenceKey = "EncoderOffset";
     //conversion factors
     final double WHEEL_DIAMETER = Units.inchesToMeters(4);
     final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER * Math.PI;
@@ -43,8 +46,9 @@ public class swerveModule extends SubsystemBase{
     final double STEER_VELOCITY_CONVERSION = STEER_POSITION_CONVERSION / 60.0;
 
     //CONSTRUCTOR//
-        public swerveModule(int driveMotorID, int steerMotorID, int encoderID, Double encoderOffsetRotations){
+        public swerveModule(int driveMotorID, int steerMotorID, int encoderID){
             this.driveMotorID = driveMotorID;
+            this.encoderID = encoderID;
 
             //drive motor 
             driveMotor = new SparkMax(driveMotorID, MotorType.kBrushless);
@@ -63,7 +67,6 @@ public class swerveModule extends SubsystemBase{
             steerMotor.configure(steerConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
             // module encoder
             moduleEncoder = new CANcoder(encoderID,"Default Name");
-            this.encoderOffsetRotations = encoderOffsetRotations;
 
             //controllers
             //driveController = driveMotor.getPIDController();
@@ -91,12 +94,34 @@ public class swerveModule extends SubsystemBase{
             driveMotor.set(targetState.speedMetersPerSecond/Constants.attainableMaxModuleSpeedMPS); 
         }
     //FEEDBACK//
+        public Command calibrate() {
+            return runOnce(() -> {
+                SparkMaxConfig brakeConfig = new SparkMaxConfig();
+                brakeConfig.smartCurrentLimit(40);
+                brakeConfig.idleMode(IdleMode.kBrake);
+                steerMotor.configure(brakeConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+
+                var encoderValue = moduleEncoder.getAbsolutePosition().getValueAsDouble();
+                Preferences.setDouble(EncoderPreferenceKey + encoderID, encoderValue);
+            }).withName("Calibrate");
+        }
+
+        public Command prepareToCalibrate() {
+            return runOnce(() -> {
+                SparkMaxConfig idleConfig = new SparkMaxConfig();
+                idleConfig.smartCurrentLimit(40);
+                idleConfig.idleMode(IdleMode.kCoast);
+                steerMotor.configure(idleConfig, ResetMode.kNoResetSafeParameters, PersistMode.kNoPersistParameters);
+                steerMotor.set(0);
+            }).withName("Prepare to calibrate");
+        }
+
         public void periodic() {
             SmartDashboard.putNumber("S" + driveMotorID, getModuleAngRotations());
         }
 
         public double getModuleAngRotations(){
-            return moduleEncoder.getAbsolutePosition().getValueAsDouble() - encoderOffsetRotations;
+            return moduleEncoder.getAbsolutePosition().getValueAsDouble() - Preferences.getDouble(EncoderPreferenceKey + encoderID, 0);
         }
         
         public SwerveModulePosition getModulePosition() {

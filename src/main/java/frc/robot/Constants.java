@@ -28,26 +28,18 @@ public class Constants {
             public static final double SteerKP = 1.5, SteerKI = 0, SteerKD = 0;
         
             public static final int FrontLeftDriveID   = 4, FrontLeftSteerID   = 5, FrontLeftEncoderID = 6;
-			public static final double FrontLeftEncoderOffset = -0.456;//-0.423340 rotations raw = 0.000000 rotations
-            // public static final double FrontLeftEncoderOffset = 0;
 
             public static final int FrontRightDriveID   = 1, FrontRightSteerID   = 2, FrontRightEncoderID = 3;
-            public static final double FrontRightEncoderOffset = -0.347;//0.484131 rotations raw = -0.000244 rotations
-            // public static final double FrontRightEncoderOffset = 0;
 
             public static final int RearLeftDriveID   = 7, RearLeftSteerID   = 8, RearLeftEncoderID = 9;
-            public static final double RearLeftEncoderOffset = 0.386;//0.283691 rotations raw = -0.000244 rotations
-            // public static final double RearLeftEncoderOffset = 0;
 
             public static final int RearRightDriveID   = 10, RearRightSteerID   = 11, RearRightEncoderID = 12;
-            public static final double RearRightEncoderOffset = 0.131;//0.448730 rotations raw = 0.000244 rotations
-            // public static final double RearRightEncoderOffset = 0;
 
         swerveModule[] moduleArray = new swerveModule[] {
-            new swerveModule(FrontRightDriveID,FrontRightSteerID,FrontRightEncoderID,FrontRightEncoderOffset),
-            new swerveModule(FrontLeftDriveID, FrontLeftSteerID, FrontLeftEncoderID, FrontLeftEncoderOffset),
-            new swerveModule(RearLeftDriveID, RearLeftSteerID, RearLeftEncoderID, RearLeftEncoderOffset),
-            new swerveModule(RearRightDriveID, RearRightSteerID, RearRightEncoderID, RearRightEncoderOffset)
+            new swerveModule(FrontRightDriveID,FrontRightSteerID,FrontRightEncoderID),
+            new swerveModule(FrontLeftDriveID, FrontLeftSteerID, FrontLeftEncoderID),
+            new swerveModule(RearLeftDriveID, RearLeftSteerID, RearLeftEncoderID),
+            new swerveModule(RearRightDriveID, RearRightSteerID, RearRightEncoderID)
         };
         
     }
